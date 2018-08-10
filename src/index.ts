@@ -8,7 +8,7 @@ import { formatNode } from './printer';
 const htmlString: string = fs.readFileSync('tests/actual/a.html', 'utf8');
 
 const rootNode = generateAST(htmlString);
-// console.log(util.inspect(rootNode, false, null));
+console.log(util.inspect(rootNode, false, null));
 
 
 fs.writeFileSync('out.html', formatNode(rootNode, 0));

@@ -120,6 +120,14 @@ const attributeRules: AttributeRule[] = [
 const textRules: TextRule[] = [
     {
         type: RuleTypes.TEXT_RULE,
+        name: 'textNewLine',
+        shouldApply: (tn: TextNode): boolean => tn.value === '\n',
+        apply: (_: TextNode, ___: number): string => {
+            return '';
+        }
+    },
+    {
+        type: RuleTypes.TEXT_RULE,
         name: 'textSameLine',
         shouldApply: (_: TextNode): boolean => true,
         apply: (tn: TextNode, _: number): string => {

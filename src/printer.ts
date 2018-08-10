@@ -4,6 +4,8 @@ import { applyFirstRule, tagRules, textRules, emptyStringFunc } from './rules';
 
 export function formatNode(node: ast.Node, indent: number): string {
     switch (node.type) {
+        case ast.NodeTypes.ROOT:
+            return node.children.map( n => formatNode(n, indent)).join('');
         case ast.NodeTypes.TAG:
             return applyFirstRule(tagRules, node, indent, formatNode);
         case ast.NodeTypes.TEXT:

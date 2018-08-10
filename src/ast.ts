@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import util from 'util';
 
 interface AbstractNode {
     type: NodeTypes;
@@ -11,14 +12,19 @@ interface LineInformation {
 }
 
 export enum NodeTypes {
+    ROOT = 'root', // Wrapper to allow multiple top level nodes
     TAG = 'tag',
     TEXT = 'text',
     COMMENT = 'comment',
     NEWLINE = 'newline',
 }
 
-export type Node = TagNode | TextNode | CommentNode | NewlineNode;
+export type Node = RootNode | TagNode | TextNode | CommentNode | NewlineNode;
 
+export interface RootNode extends AbstractNode {
+    type: NodeTypes.ROOT;
+    children: Node[];
+}
 export interface TagNode extends AbstractNode{
     type: NodeTypes.TAG;
     children: Node[];
@@ -50,13 +56,23 @@ export interface Attribute {
 function cheerioElementToNode(ce: CheerioElement, htmlString: string): Node {
     const lineInfo = getLineInfo(ce, htmlString);
     if (ce.type === 'tag') {
-        return {
-            type: NodeTypes.TAG,
-            name: ce.name,
-            children: [],
-            attributes: attributeMapToArray(ce.attribs),
-            lineInformation: lineInfo
-        };
+        // Internal root element
+        if(ce.name === NodeTypes.ROOT){
+            return {
+                type: NodeTypes.ROOT,
+                children: [],
+                lineInformation: lineInfo,
+            }
+        } else {
+            return {
+                type: NodeTypes.TAG,
+                name: ce.name,
+                children: [],
+                attributes: attributeMapToArray(ce.attribs),
+                lineInformation: lineInfo
+            };
+        }
+
     } else if (ce.type === 'comment') {
         return {
             type: NodeTypes.COMMENT,
@@ -77,7 +93,7 @@ function getLineInfo(cheerioElement: CheerioElement, htmlString: string): LineIn
     const splits = htmlString.substr(0, startIndex).split('\n');
 
     return {
-        lineNumber: splits.length,
+        lineNumber: splits.length - 1, // Subtract 1 because of internal root element
         lineLength: splits[splits.length - 1].length,
     };
 }
@@ -112,7 +128,6 @@ function attributeMapToArray(obj: Dictionary<string>): Attribute[] {
 
 export function generateAST(htmlString: string): Node {
     function traverse(ce: CheerioElement, parent?: TagNode) {
-
         const node = cheerioElementToNode(ce, htmlString);
         if (parent) {
             parent.children.push(node)
@@ -128,16 +143,12 @@ export function generateAST(htmlString: string): Node {
 
         return node;
     };
+    // Use our own root element to wrap everything! 
+    // So it is possible to deal with multiple top-level nodes
+    htmlString = `<root>\n${htmlString}\n</root>`;
 
     const $ = cheerio.load(htmlString, { withStartIndices: true, xmlMode: true });
-
-    const cheerioElement = $("*").get();
-    // This root element is guranteed to be a tag!
-    /** 
-     * TODO: Handle the case where comments are the first thing inside the document
-     * Currently they are ignore
-    **/
-    const rootCheerioElement = cheerioElement[0];
+    const rootCheerioElement = $("*").get()[0];
     return traverse(rootCheerioElement);
 }
 
