@@ -41,6 +41,11 @@ export interface NewlineNode extends AbstractNode {
     count: number;
 }
 
+export interface Attribute {
+    key: string;
+    value: string;
+}
+
 
 function cheerioElementToNode(ce: CheerioElement, htmlString: string): Node {
     const lineInfo = getLineInfo(ce, htmlString);
@@ -51,19 +56,19 @@ function cheerioElementToNode(ce: CheerioElement, htmlString: string): Node {
             children: [],
             attributes: attributeMapToArray(ce.attribs),
             lineInformation: lineInfo
-        } as TagNode;
+        };
     } else if (ce.type === 'comment') {
         return {
             type: NodeTypes.COMMENT,
             value: ce.data as string,
             lineInformation: lineInfo,
-        } as CommentNode;
+        };
     } else {
         return {
             type: NodeTypes.TEXT,
             value: ce.data as string,
             lineInformation: lineInfo
-        } as TextNode;
+        };
     }
 }
 
@@ -77,6 +82,11 @@ function getLineInfo(cheerioElement: CheerioElement, htmlString: string): LineIn
     };
 }
 
+/**
+ * Function for debugging
+ * @param ce 
+ * @param htmlString 
+ */
 function printCheerioElement(ce: CheerioElement, htmlString: string): void {
     if (ce.name) {
         console.log('name', ce.name, ce.attribs, getLineInfo(ce, htmlString));
@@ -91,12 +101,12 @@ function printCheerioElement(ce: CheerioElement, htmlString: string): void {
  * Converts a dictionary object into a ES6 Map
  * @param obj 
  */
-function attributeMapToArray(obj: Dictionary<string>): {key: string, value: string}[] {
-    const keyValueArray: {key: string, value: string}[] = [];
+function attributeMapToArray(obj: Dictionary<string>): Attribute[] {
+    const attributeArray: Attribute[] = [];
     for (const key of Object.keys(obj)) {
-        keyValueArray.push({key, value: obj[key]});
+        attributeArray.push({key, value: obj[key]});
     }
-    return keyValueArray;
+    return attributeArray;
 }
 
 
