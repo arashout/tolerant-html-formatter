@@ -16,10 +16,9 @@ export enum NodeTypes {
     TAG = 'tag',
     TEXT = 'text',
     COMMENT = 'comment',
-    NEWLINE = 'newline',
 }
 
-export type Node = RootNode | TagNode | TextNode | CommentNode | NewlineNode;
+export type Node = RootNode | TagNode | TextNode | CommentNode
 
 export interface RootNode extends AbstractNode {
     type: NodeTypes.ROOT;
@@ -40,11 +39,6 @@ export interface TextNode extends AbstractNode {
 export interface CommentNode extends AbstractNode {
     type: NodeTypes.COMMENT;
     value: string;
-}
-
-export interface NewlineNode extends AbstractNode {
-    type: NodeTypes.NEWLINE;
-    count: number;
 }
 
 export interface Attribute {
