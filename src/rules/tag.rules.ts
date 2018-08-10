@@ -102,16 +102,16 @@ export const tagRules: TagRule[] = [
             const childrenString = tn.children.map(n => cb(n, indent + INDENT_SIZE)).join('');
 
             const openingTagString = indentString(`<${tn.name}${attributesString}>`);
-            const closingTagString = indentString(`</${tn.name}\n`)
+            const closingTagString = indentString(`</${tn.name}>\n`)
             return `${openingTagString}\n${childrenString}${closingTagString}`;
         },
         tests: [
             // TODO: This one is completely broken
             {
-                actualHTML: `<div a="1"><p>Hello <span>Goodbye</span><p></div>`,
+                actualHTML: `<div a="1"><p>Hello <span>Goodbye</span></p></div>`,
                 expectedHTML: cleanStringHTML(`
                 <div a="1">
-                  <p>Hello <span>Goodbye</span><p>
+                  <p>Hello <span>Goodbye</span></p>
                 </div>`),
                 description: "default print"
             },
