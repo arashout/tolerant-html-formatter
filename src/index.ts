@@ -5,7 +5,7 @@ import { generateAST } from './ast';
 import { formatNode } from './printer';
 
 
-const htmlString: string = fs.readFileSync('tests/actual/a.html', 'utf8');
+const htmlString: string = fs.readFileSync('src/tests/integration/b.html', 'utf8');
 
 const rootNode = generateAST(htmlString);
 

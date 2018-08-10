@@ -34,7 +34,7 @@ export interface TextRule extends BaseRule<RuleTypes.TEXT_RULE, TextNode> { };
 export interface CommentRule extends BaseRule<RuleTypes.COMMENT_RULE, CommentNode> { };
 export interface AttributeRule extends BaseRule<RuleTypes.ATTRIBUTE_RULE, Attribute[]> { };
 
-export function insert(text: string, indent = 0) {
+export function indentString(text: string, indent = 0) {
     return ' '.repeat(indent) + text;
 }
 export function emptyStringFunc(_: Node) { return '' }

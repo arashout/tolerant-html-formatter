@@ -6,7 +6,10 @@ export const textRules: TextRule[] = [
         type: RuleTypes.TEXT_RULE,
         name: 'textNewLine',
         shouldApply: (tn: TextNode): boolean => tn.value === '\n',
-        apply: (_: TextNode, ___: number): string => ''
+        apply: (_: TextNode, ___: number): string => '',
+        tests: [
+            {actualHTML: "\n", expectedHTML: "", description: "stupid newlines"},
+        ]
     },
     {
         type: RuleTypes.TEXT_RULE,
