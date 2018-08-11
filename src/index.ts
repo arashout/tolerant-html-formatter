@@ -9,4 +9,4 @@ const htmlString: string = fs.readFileSync('src/tests/integration/b.html', 'utf8
 
 const rootNode = generateAST(htmlString);
 
-fs.writeFileSync('out.html', formatNode(rootNode, 0));
+fs.writeFileSync('out.html', formatNode(rootNode, 0, []));

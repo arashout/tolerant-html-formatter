@@ -1,63 +1,34 @@
 import { generateAST } from "../ast";
 import { formatNode } from "../printer";
 
-import { RuleTypes } from "../rules/rules";
+import { RuleTypes, RuleTest, Rule, RuleTrace } from "../rules/rules";
 import { textRules } from "../rules/text.rules";
 import { tagRules } from "../rules/tag.rules";
 import { attributeRules } from "../rules/attributes.rules";
 import { commentRules } from "../rules/comment.rules";
+import { prettyPrintRuleTraces } from "../util";
 
 
-for (const tr of textRules) {
-    if (tr.tests) {
-        for (const trt of tr.tests) {
-            test(`testing ${RuleTypes[tr.type]} rule: ${tr.name}\n${trt.description}`, () => {
-                const rootNode = generateAST(trt.actualHTML);
-                expect(formatNode(rootNode, 0)).toBe(trt.expectedHTML);
-            });
+ruleTestsRunner(textRules);
+ruleTestsRunner(commentRules);
+ruleTestsRunner(attributeRules);
+ruleTestsRunner(tagRules);
+
+function ruleTestsRunner(rules: Rule[]){
+    for (const r of rules) {
+        if (r.tests) {
+            for (const rt of r.tests) {
+                test(`testing ${RuleTypes[r.type]} rule: ${r.name}\n${rt.description}`, () => {
+                    const rootNode = generateAST(rt.actualHTML);
+                    // Ugly workaround for custom failure messages
+                    const ruleTraces: RuleTrace[] = [];
+                    const result = formatNode(rootNode, 0, ruleTraces);
+                    if (result !== rt.expectedHTML){
+                        prettyPrintRuleTraces(ruleTraces);
+                    }
+                    expect(result).toBe(rt.expectedHTML);
+                });
+            }
         }
     }
 }
-
-for (const tr of commentRules) {
-    if (tr.tests) {
-        for (const trt of tr.tests) {
-            test(`testing ${RuleTypes[tr.type]} rule: ${tr.name}\n${trt.description}`, () => {
-                const rootNode = generateAST(trt.actualHTML);
-                expect(formatNode(rootNode, 0)).toBe(trt.expectedHTML);
-            });
-        }
-    }
-}
-
-for (const tr of attributeRules) {
-    if (tr.tests) {
-        for (const trt of tr.tests) {
-            test(`testing ${RuleTypes[tr.type]} rule: ${tr.name}\n${trt.description}`, () => {
-                const rootNode = generateAST(trt.actualHTML);
-                expect(formatNode(rootNode, 0)).toBe(trt.expectedHTML);
-            });
-        }
-    }
-}
-// NOTE: These are not really unit tests as they depend on the other rules
-for (const tr of tagRules) {
-    if (tr.tests) {
-        for (const trt of tr.tests) {
-            test(`testing ${RuleTypes[tr.type]} rule: ${tr.name}\n${trt.description}`, () => {
-                const rootNode = generateAST(trt.actualHTML);
-                expect(formatNode(rootNode, 0)).toBe(trt.expectedHTML);
-            });
-        }
-    }
-}
-
-
-
-
-
-
-
-
-
-

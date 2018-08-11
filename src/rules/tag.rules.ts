@@ -1,5 +1,5 @@
 import { TagNode, NodeTypes } from "../ast";
-import { RuleTypes, TagRule, FormatNode, applyFirstRule, indentString, emptyStringFunc, INDENT_SIZE } from "./rules";
+import { RuleTypes, TagRule, FormatNode, applyFirstRule, indentString, emptyStringFunc, INDENT_SIZE, MAX_LINE_LENGTH, RuleTrace } from "./rules";
 
 import { attributeRules } from "./attributes.rules";
 import { cleanStringHTML } from "../util";
@@ -22,6 +22,7 @@ const voidElements = [
     'wbr',
 ];
 
+// TODO: These rules will be the biggest, how can I avoid this? Should I sub-group by tag Name?
 export const tagRules: TagRule[] = [
     {
         type: RuleTypes.TAG_RULE,
@@ -29,8 +30,8 @@ export const tagRules: TagRule[] = [
         shouldApply(tn: TagNode): boolean {
             return voidElements.indexOf(tn.name) !== -1;
         },
-        apply(tn: TagNode, indent: number, _: FormatNode): string {
-            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc);
+        apply(tn: TagNode, indent: number, _: FormatNode, ruleTraces: RuleTrace[]): string {
+            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
             return indentString(`<${tn.name}${attributesString}>\n`, indent);
         },
         tests: [
@@ -55,8 +56,8 @@ export const tagRules: TagRule[] = [
         shouldApply(tn: TagNode): boolean {
             return tn.children.length === 0;
         },
-        apply(tn: TagNode, indent: number, _: FormatNode): string {
-            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc);
+        apply(tn: TagNode, indent: number, _: FormatNode, ruleTraces: RuleTrace[]): string {
+            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
             return indentString(`<${tn.name}${attributesString}></${tn.name}>\n`, indent);
         },
         tests: [
@@ -73,10 +74,15 @@ export const tagRules: TagRule[] = [
         shouldApply(tn: TagNode): boolean {
             return tn.children.length === 1 && tn.children[0].type === NodeTypes.TEXT;
         },
-        apply(tn: TagNode, indent: number, cb: FormatNode): string {
-            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc);
-            const childrenString = tn.children.map(n => cb(n, indent + INDENT_SIZE)).join('');
-            return indentString(`<${tn.name}${attributesString}>${childrenString}</${tn.name}>\n`, indent);
+        apply(tn: TagNode, indent: number, cb: FormatNode, ruleTraces: RuleTrace[]): string {
+            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
+            const childrenString = cb(tn.children[0], 0, ruleTraces);
+            const formattedString = `<${tn.name}${attributesString}>${childrenString}</${tn.name}>\n`;
+            // Q: I have a feeling I'm going to repeat this chunk of code a bunch, should I wrap it somehow?
+            if(formattedString.length <= MAX_LINE_LENGTH){
+                return formattedString;
+            }
+            return indentString(`<${tn.name}${attributesString}>\n${' '.repeat(indent + INDENT_SIZE)}${childrenString}\n</${tn.name}>\n`, indent);
         },
         tests: [
             {
@@ -84,12 +90,16 @@ export const tagRules: TagRule[] = [
                 expectedHTML: `<div a="1">This is text</div>`,
                 description: "simple text node"
             },
-            // TODO: What should the behavior be here? 
-            // Should I be replacing newlines or is that disregarding what the author intended?
+            // Q: What should the behavior be here? Should I be replacing newlines or is that disregarding what the author intended?
             {
                 actualHTML: `<div a="1">\nThis\nis text\n</div>`,
                 expectedHTML: `<div a="1">\nThis\nis text\n</div>`,
                 description: "screw up simple text node"
+            },
+            {
+                actualHTML: `<div a="1">Super long stringggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg</div>`,
+                expectedHTML: cleanStringHTML(`<div a="1">\n  Super long stringggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg\n</div>`),
+                description: "break text node onto a new line"
             },
         ]
     },
@@ -97,16 +107,17 @@ export const tagRules: TagRule[] = [
         type: RuleTypes.TAG_RULE,
         name: 'defaultTag',
         shouldApply: (_: TagNode): boolean => true,
-        apply: (tn: TagNode, indent: number, cb: FormatNode): string => {
-            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc);
-            const childrenString = tn.children.map(n => cb(n, indent + INDENT_SIZE)).join('');
+        apply: (tn: TagNode, indent: number, cb: FormatNode, ruleTraces: RuleTrace[]): string => {
+            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
+            const childrenString = tn.children.map(n => cb(n, indent + INDENT_SIZE, ruleTraces)).join('');
 
-            const openingTagString = indentString(`<${tn.name}${attributesString}>`);
-            const closingTagString = indentString(`</${tn.name}>\n`)
-            return `${openingTagString}\n${childrenString}${closingTagString}`;
+            const openingTagString = indentString(`<${tn.name}${attributesString}>`, indent);
+            const closingTagString = indentString(`</${tn.name}>`, indent)
+
+            return `${openingTagString}\n${childrenString}${closingTagString}\n`;
         },
         tests: [
-            // TODO: This one is completely broken
+            // TODO: Nice finally getting somewhere!
             {
                 actualHTML: `<div a="1"><p>Hello <span>Goodbye</span></p></div>`,
                 expectedHTML: cleanStringHTML(`
