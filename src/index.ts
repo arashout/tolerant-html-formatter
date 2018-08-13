@@ -11,8 +11,13 @@ const htmlString: string = fs.readFileSync('src/tests/integration/b.html', 'utf8
 
 const rootNode = generateAST(htmlString);
 const ruleTraces: RuleTrace[] = [];
+if(rootNode){
+    fs.writeFileSync('out_ast.json', JSON.stringify(rootNode, null, 2));
+    fs.writeFileSync('out.html', formatNode(rootNode, 0, ruleTraces));
+    fs.writeFileSync('out_ruletraces.json', JSON.stringify({ruleTraces: prettifyRuleTraces(ruleTraces)}, null, 2));
+    console.log('Results printed out to out files');
+}
+else {
+    console.error('Unable to parse HTML!');
+}
 
-fs.writeFileSync('out_ast.json', JSON.stringify(rootNode, null, 2));
-fs.writeFileSync('out.html', formatNode(rootNode, 0, ruleTraces));
-fs.writeFileSync('out_ruletraces.json', JSON.stringify({ruleTraces: prettifyRuleTraces(ruleTraces)}, null, 2));
-console.log('Results printed out to out files');

@@ -1,8 +1,5 @@
 import { TagNode, Attribute, Node, TextNode, CommentNode, } from "../ast";
 
-export const INDENT_SIZE = 2; // SPACES
-export const MAX_LINE_LENGTH = 110;
-
 // RT == RuleType, IT == InputType
 interface BaseRule<RT extends RuleTypes, IT extends InputType> {
     type: RT;
@@ -43,6 +40,7 @@ export function emptyStringFunc(_: Node) { return '' }
 export interface RuleTrace {
     rule_name: string;
     node_string: string;
+    meta?: Dictionary<Primitive>;
 }
 
 /**

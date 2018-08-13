@@ -22,11 +22,14 @@ function ruleTestsRunner(rules: Rule[]){
                     const rootNode = generateAST(rt.actualHTML);
                     // Ugly workaround for custom failure messages
                     const ruleTraces: RuleTrace[] = [];
-                    const result = formatNode(rootNode, 0, ruleTraces);
-                    if (result !== rt.expectedHTML){
-                        console.log(prettifyRuleTraces(ruleTraces));
+                    expect(rootNode).not.toBeNull();
+                    if(rootNode){
+                        const result = formatNode(rootNode, 0, ruleTraces);
+                        if (result !== rt.expectedHTML){
+                            console.log(prettifyRuleTraces(ruleTraces));
+                        }
+                        expect(result).toBe(rt.expectedHTML);
                     }
-                    expect(result).toBe(rt.expectedHTML);
                 });
             }
         }

@@ -1,5 +1,6 @@
 import { Attribute } from "../ast";
-import { RuleTypes, AttributeRule, indentString, INDENT_SIZE } from "./rules";
+import { RuleTypes, AttributeRule, indentString } from "./rules";
+import { INDENT_SIZE } from '../config';
 import { cleanStringHTML } from "../util";
 
 

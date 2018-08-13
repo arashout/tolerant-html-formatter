@@ -27,7 +27,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "Create Tag",
+                      "value": "Create Tag\n        With Newline\n        What Happens",
                       "lineInformation": {
                         "lineNumber": 7,
                         "lineLength": 128
@@ -63,16 +63,16 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "icon",
+                      "value": "icon\n          With Newline\n          What Happens",
                       "lineInformation": {
-                        "lineNumber": 10,
+                        "lineNumber": 12,
                         "lineLength": 9
                       }
                     }
                   ],
                   "attributes": [],
                   "lineInformation": {
-                    "lineNumber": 10,
+                    "lineNumber": 12,
                     "lineLength": 6
                   }
                 }
@@ -107,7 +107,7 @@
                         }
                       ],
                       "lineInformation": {
-                        "lineNumber": 14,
+                        "lineNumber": 20,
                         "lineLength": 8
                       }
                     }
@@ -123,7 +123,7 @@
                     }
                   ],
                   "lineInformation": {
-                    "lineNumber": 13,
+                    "lineNumber": 19,
                     "lineLength": 6
                   }
                 },
@@ -151,14 +151,14 @@
                                       "type": "text",
                                       "value": "NAME",
                                       "lineInformation": {
-                                        "lineNumber": 21,
+                                        "lineNumber": 27,
                                         "lineLength": 18
                                       }
                                     }
                                   ],
                                   "attributes": [],
                                   "lineInformation": {
-                                    "lineNumber": 21,
+                                    "lineNumber": 27,
                                     "lineLength": 14
                                   }
                                 },
@@ -173,21 +173,21 @@
                                     }
                                   ],
                                   "lineInformation": {
-                                    "lineNumber": 22,
+                                    "lineNumber": 28,
                                     "lineLength": 14
                                   }
                                 }
                               ],
                               "attributes": [],
                               "lineInformation": {
-                                "lineNumber": 20,
+                                "lineNumber": 26,
                                 "lineLength": 12
                               }
                             }
                           ],
                           "attributes": [],
                           "lineInformation": {
-                            "lineNumber": 19,
+                            "lineNumber": 25,
                             "lineLength": 10
                           }
                         },
@@ -207,14 +207,14 @@
                                       "type": "text",
                                       "value": "{{ ::tag.name }}",
                                       "lineInformation": {
-                                        "lineNumber": 27,
+                                        "lineNumber": 33,
                                         "lineLength": 18
                                       }
                                     }
                                   ],
                                   "attributes": [],
                                   "lineInformation": {
-                                    "lineNumber": 27,
+                                    "lineNumber": 33,
                                     "lineLength": 14
                                   }
                                 },
@@ -253,7 +253,7 @@
                                         }
                                       ],
                                       "lineInformation": {
-                                        "lineNumber": 29,
+                                        "lineNumber": 35,
                                         "lineLength": 16
                                       }
                                     }
@@ -265,7 +265,7 @@
                                     }
                                   ],
                                   "lineInformation": {
-                                    "lineNumber": 28,
+                                    "lineNumber": 34,
                                     "lineLength": 14
                                   }
                                 }
@@ -277,14 +277,14 @@
                                 }
                               ],
                               "lineInformation": {
-                                "lineNumber": 26,
+                                "lineNumber": 32,
                                 "lineLength": 12
                               }
                             }
                           ],
                           "attributes": [],
                           "lineInformation": {
-                            "lineNumber": 25,
+                            "lineNumber": 31,
                             "lineLength": 10
                           }
                         }
@@ -296,7 +296,7 @@
                         }
                       ],
                       "lineInformation": {
-                        "lineNumber": 18,
+                        "lineNumber": 24,
                         "lineLength": 8
                       }
                     }
@@ -312,7 +312,7 @@
                     }
                   ],
                   "lineInformation": {
-                    "lineNumber": 17,
+                    "lineNumber": 23,
                     "lineLength": 6
                   }
                 }
@@ -324,7 +324,7 @@
                 }
               ],
               "lineInformation": {
-                "lineNumber": 12,
+                "lineNumber": 18,
                 "lineLength": 4
               }
             }

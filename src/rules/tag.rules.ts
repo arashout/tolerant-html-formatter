@@ -1,8 +1,9 @@
 import { TagNode, NodeTypes } from "../ast";
-import { RuleTypes, TagRule, FormatNode, applyFirstRule, indentString, emptyStringFunc, INDENT_SIZE, MAX_LINE_LENGTH, RuleTrace } from "./rules";
+import { RuleTypes, TagRule, FormatNode, applyFirstRule, indentString, emptyStringFunc, RuleTrace } from "./rules";
+import { INDENT_SIZE, MAX_LINE_LENGTH } from '../config';
 
 import { attributeRules } from "./attributes.rules";
-import { cleanStringHTML } from "../util";
+import { cleanStringHTML, squashWhitespace } from "../util";
 
 // https://www.w3.org/TR/html/syntax.html#writing-html-documents-elements
 const voidElements = [
@@ -76,17 +77,18 @@ export const tagRules: TagRule[] = [
         },
         apply(tn: TagNode, indent: number, cb: FormatNode, ruleTraces: RuleTrace[]): string {
             const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
-            let childrenString = cb(tn.children[0], 0, ruleTraces);
-            const formattedString = indentString(`<${tn.name}${attributesString}>${childrenString}</${tn.name}>\n`, indent);
-            // Q: I have a feeling I'm going to repeat this chunk of code a bunch, should I wrap it somehow?
-            if(formattedString.length <= MAX_LINE_LENGTH){
-                return formattedString;
+            let text = cb(tn.children[0], 0, ruleTraces);
+
+            // TODO: Should I be counting indentation?
+            let singleLineResult = indentString(`<${tn.name}${attributesString}>${squashWhitespace(text)}</${tn.name}>\n`, indent);
+            if(singleLineResult.length <= MAX_LINE_LENGTH){
+                return singleLineResult;
             } else {
                 // Indent all the strings
                 const startTag = indentString(`<${tn.name}${attributesString}>\n`, indent);
-                childrenString = indentString(childrenString + '\n', indent + INDENT_SIZE);
+                text = indentString(text + '\n', indent + INDENT_SIZE);
                 const endTag = indentString(`</${tn.name}>\n`, indent);
-                return startTag + childrenString + endTag;
+                return startTag + text + endTag;
             }
         },
         tests: [
@@ -95,17 +97,16 @@ export const tagRules: TagRule[] = [
                 expectedHTML: `<div a="1">This is text</div>`,
                 description: "simple text node"
             },
-            // Q: What should the behavior be here? Should I be replacing newlines or is that disregarding what the author intended?
-            {
-                actualHTML: `<div a="1">\nThis\nis text\n</div>`,
-                expectedHTML: `<div a="1">\nThis\nis text\n</div>`,
-                description: "screw up simple text node"
-            },
             {
                 actualHTML: `<div a="1">Super long stringggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg</div>`,
                 expectedHTML: cleanStringHTML(`<div a="1">\n  Super long stringggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg\n</div>`),
                 description: "break text node onto a new line"
             },
+            {
+                actualHTML: `<i>icon\nWith Newline\n What Happens</i>`,
+                expectedHTML: `<i>icon With Newline What Happens</i>`,
+                description: 'squash multiple lines into single lines if we can'
+            }
         ]
     },
     {
@@ -122,7 +123,6 @@ export const tagRules: TagRule[] = [
             return `${startTag}\n${childrenString}${endTag}\n`;
         },
         tests: [
-            // TODO: Nice finally getting somewhere!
             {
                 actualHTML: `<button ng-click="$ctrl.openTagForm()" ff-show=">developer" class="flex btn btn-primary mt2"
                 style="white-space: nowrap;">Create Tag</button>`,

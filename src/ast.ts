@@ -110,9 +110,10 @@ function attributeMapToArray(obj: Dictionary<string>): Attribute[] {
 }
 
 
-export function generateAST(htmlString: string): Node {
-    function traverse(ce: CheerioElement, parent?: TagNode) {
+export function generateAST(htmlString: string): Maybe<Node> {
+    function traverse(ce: CheerioElement, previousLine: number, parent?: TagNode) {
         const node = cheerioElementToNode(ce, htmlString);
+
         if (node) {
             if (parent) {
                 parent.children.push(node)
@@ -122,12 +123,13 @@ export function generateAST(htmlString: string): Node {
                 // If it has children, it has to be a TagNode
                 const tagNode = node as TagNode;
                 for (const cce of ce.children) {
-                    traverse(cce, tagNode);
+                    const childNode = traverse(cce, node.lineInformation.lineNumber, tagNode);
+                    console.log(node.name, previousLine - node.lineInformation.lineNumber);
                 }
             }
         }
 
-        return node || { type: NodeTypes.ROOT, children: [], lineInformation: { lineLength: 0, lineNumber: 0 } };
+        return node;
     };
     // Use our own root element to wrap everything! 
     // So it is possible to deal with multiple top-level nodes
@@ -135,6 +137,6 @@ export function generateAST(htmlString: string): Node {
 
     const $ = cheerio.load(htmlString, { withStartIndices: true, xmlMode: true });
     const rootCheerioElement = $("*").get()[0];
-    return traverse(rootCheerioElement);
+    return traverse(rootCheerioElement, 0);
 }
 
