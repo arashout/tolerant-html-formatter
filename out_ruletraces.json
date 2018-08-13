@@ -1,0 +1,573 @@
+{
+  "ruleTraces": [
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "div",
+        "attributes": [
+          {
+            "key": "class",
+            "value": "flex flex-column flex-auto"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 1,
+          "lineLength": 0
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "class",
+          "value": "flex flex-column flex-auto"
+        }
+      ]
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "div",
+        "attributes": [
+          {
+            "key": "class",
+            "value": "page-background"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 2,
+          "lineLength": 2
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "class",
+          "value": "page-background"
+        }
+      ]
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "div",
+        "attributes": [
+          {
+            "key": "class",
+            "value": "flex flex-justify"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 3,
+          "lineLength": 4
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "class",
+          "value": "flex flex-justify"
+        }
+      ]
+    },
+    {
+      "name": "commentSameLine",
+      "node": {
+        "type": "comment",
+        "value": "fasdf",
+        "lineInformation": {
+          "lineNumber": 6,
+          "lineLength": 6
+        }
+      }
+    },
+    {
+      "name": "singleTextChildTag",
+      "node": {
+        "type": "tag",
+        "name": "button",
+        "attributes": [
+          {
+            "key": "ng-click",
+            "value": "$ctrl.openTagForm()"
+          },
+          {
+            "key": "ff-show",
+            "value": ">developer"
+          },
+          {
+            "key": "class",
+            "value": "flex btn btn-primary mt2"
+          },
+          {
+            "key": "style",
+            "value": "white-space: nowrap;"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 7,
+          "lineLength": 6
+        }
+      }
+    },
+    {
+      "name": "attributePerLine",
+      "node": [
+        {
+          "key": "ng-click",
+          "value": "$ctrl.openTagForm()"
+        },
+        {
+          "key": "ff-show",
+          "value": ">developer"
+        },
+        {
+          "key": "class",
+          "value": "flex btn btn-primary mt2"
+        },
+        {
+          "key": "style",
+          "value": "white-space: nowrap;"
+        }
+      ]
+    },
+    {
+      "name": "textSameLine",
+      "node": {
+        "type": "text",
+        "value": "Create Tag",
+        "lineInformation": {
+          "lineNumber": 7,
+          "lineLength": 128
+        }
+      }
+    },
+    {
+      "name": "singleTextChildTag",
+      "node": {
+        "type": "tag",
+        "name": "i",
+        "attributes": [],
+        "lineInformation": {
+          "lineNumber": 10,
+          "lineLength": 6
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": []
+    },
+    {
+      "name": "textSameLine",
+      "node": {
+        "type": "text",
+        "value": "icon",
+        "lineInformation": {
+          "lineNumber": 10,
+          "lineLength": 9
+        }
+      }
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "div",
+        "attributes": [
+          {
+            "key": "class",
+            "value": "col-12"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 12,
+          "lineLength": 4
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "class",
+          "value": "col-12"
+        }
+      ]
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "div",
+        "attributes": [
+          {
+            "key": "class",
+            "value": "flex flex-auto flex-center"
+          },
+          {
+            "key": "ng-if",
+            "value": "$ctrl.loading"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 13,
+          "lineLength": 6
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "class",
+          "value": "flex flex-auto flex-center"
+        },
+        {
+          "key": "ng-if",
+          "value": "$ctrl.loading"
+        }
+      ]
+    },
+    {
+      "name": "simpleTag",
+      "node": {
+        "type": "tag",
+        "name": "round-spinner",
+        "attributes": [
+          {
+            "key": "class",
+            "value": "mx-auto my3"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 14,
+          "lineLength": 8
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "class",
+          "value": "mx-auto my3"
+        }
+      ]
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "div",
+        "attributes": [
+          {
+            "key": "class",
+            "value": "legacy-data-table bg-white flex flex-column border"
+          },
+          {
+            "key": "ng-if",
+            "value": "!$ctrl.loading"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 17,
+          "lineLength": 6
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "class",
+          "value": "legacy-data-table bg-white flex flex-column border"
+        },
+        {
+          "key": "ng-if",
+          "value": "!$ctrl.loading"
+        }
+      ]
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "table",
+        "attributes": [
+          {
+            "key": "class",
+            "value": "table-light"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 18,
+          "lineLength": 8
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "class",
+          "value": "table-light"
+        }
+      ]
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "thead",
+        "attributes": [],
+        "lineInformation": {
+          "lineNumber": 19,
+          "lineLength": 10
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": []
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "tr",
+        "attributes": [],
+        "lineInformation": {
+          "lineNumber": 20,
+          "lineLength": 12
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": []
+    },
+    {
+      "name": "singleTextChildTag",
+      "node": {
+        "type": "tag",
+        "name": "th",
+        "attributes": [],
+        "lineInformation": {
+          "lineNumber": 21,
+          "lineLength": 14
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": []
+    },
+    {
+      "name": "textSameLine",
+      "node": {
+        "type": "text",
+        "value": "NAME",
+        "lineInformation": {
+          "lineNumber": 21,
+          "lineLength": 18
+        }
+      }
+    },
+    {
+      "name": "simpleTag",
+      "node": {
+        "type": "tag",
+        "name": "th",
+        "attributes": [
+          {
+            "key": "ff-show",
+            "value": ">developer"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 22,
+          "lineLength": 14
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "ff-show",
+          "value": ">developer"
+        }
+      ]
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "tbody",
+        "attributes": [],
+        "lineInformation": {
+          "lineNumber": 25,
+          "lineLength": 10
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": []
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "tr",
+        "attributes": [
+          {
+            "key": "ng-repeat",
+            "value": "(id, tag) in $ctrl.tags"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 26,
+          "lineLength": 12
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "ng-repeat",
+          "value": "(id, tag) in $ctrl.tags"
+        }
+      ]
+    },
+    {
+      "name": "singleTextChildTag",
+      "node": {
+        "type": "tag",
+        "name": "td",
+        "attributes": [],
+        "lineInformation": {
+          "lineNumber": 27,
+          "lineLength": 14
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": []
+    },
+    {
+      "name": "textSameLine",
+      "node": {
+        "type": "text",
+        "value": "{{ ::tag.name }}",
+        "lineInformation": {
+          "lineNumber": 27,
+          "lineLength": 18
+        }
+      }
+    },
+    {
+      "name": "defaultTag",
+      "node": {
+        "type": "tag",
+        "name": "td",
+        "attributes": [
+          {
+            "key": "ff-show",
+            "value": ">developer"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 28,
+          "lineLength": 14
+        }
+      }
+    },
+    {
+      "name": "attributesOneLine",
+      "node": [
+        {
+          "key": "ff-show",
+          "value": ">developer"
+        }
+      ]
+    },
+    {
+      "name": "simpleTag",
+      "node": {
+        "type": "tag",
+        "name": "material-icon",
+        "attributes": [
+          {
+            "key": "ng-click",
+            "value": "$ctrl.deleteTag(tag)"
+          },
+          {
+            "key": "class",
+            "value": "legacy-data-table-row-icon mr1"
+          },
+          {
+            "key": "i",
+            "value": "delete"
+          },
+          {
+            "key": "tooltip",
+            "value": ""
+          },
+          {
+            "key": "tooltip-title",
+            "value": "Delete tag"
+          },
+          {
+            "key": "tooltip-side",
+            "value": "bottom"
+          }
+        ],
+        "lineInformation": {
+          "lineNumber": 29,
+          "lineLength": 16
+        }
+      }
+    },
+    {
+      "name": "attributePerLine",
+      "node": [
+        {
+          "key": "ng-click",
+          "value": "$ctrl.deleteTag(tag)"
+        },
+        {
+          "key": "class",
+          "value": "legacy-data-table-row-icon mr1"
+        },
+        {
+          "key": "i",
+          "value": "delete"
+        },
+        {
+          "key": "tooltip",
+          "value": ""
+        },
+        {
+          "key": "tooltip-title",
+          "value": "Delete tag"
+        },
+        {
+          "key": "tooltip-side",
+          "value": "bottom"
+        }
+      ]
+    }
+  ]
+}

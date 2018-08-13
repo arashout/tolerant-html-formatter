@@ -24,10 +24,10 @@ export interface RootNode extends AbstractNode {
     type: NodeTypes.ROOT;
     children: Node[];
 }
-export interface TagNode extends AbstractNode{
+export interface TagNode extends AbstractNode {
     type: NodeTypes.TAG;
     children: Node[];
-    attributes: {key: string, value: string}[];
+    attributes: { key: string, value: string }[];
     name: string; // This cannot be an enum because of arbitary tag names
 }
 
@@ -47,40 +47,45 @@ export interface Attribute {
 }
 
 
-function cheerioElementToNode(ce: CheerioElement, htmlString: string): Node {
+function cheerioElementToNode(ce: CheerioElement, htmlString: string): Maybe<Node> {
     const lineInfo = getLineInfo(ce, htmlString);
-    if (ce.type === 'tag') {
-        // Internal root element
-        if(ce.name === NodeTypes.ROOT){
-            return {
-                type: NodeTypes.ROOT,
-                children: [],
-                lineInformation: lineInfo,
+    switch (ce.type) {
+        case 'tag':
+            // Internal root element
+            if (ce.name === NodeTypes.ROOT) {
+                return {
+                    type: NodeTypes.ROOT,
+                    children: [],
+                    lineInformation: lineInfo
+                }
+            } else {
+                return {
+                    type: NodeTypes.TAG,
+                    name: ce.name,
+                    children: [],
+                    attributes: attributeMapToArray(ce.attribs),
+                    lineInformation: lineInfo
+                };
             }
-        } else {
+        case 'comment':
             return {
-                type: NodeTypes.TAG,
-                name: ce.name,
-                children: [],
-                attributes: attributeMapToArray(ce.attribs),
+                type: NodeTypes.COMMENT,
+                value: ce.data as string,
                 lineInformation: lineInfo
             };
-        }
-
-    } else if (ce.type === 'comment') {
-        return {
-            type: NodeTypes.COMMENT,
-            value: ce.data as string,
-            lineInformation: lineInfo,
-        };
-    } else {
-        return {
-            type: NodeTypes.TEXT,
-            value: ce.data as string,
-            lineInformation: lineInfo
-        };
+        case 'text':
+            const value = String.raw`${ce.data}`.trim();
+            if (value !== '') {
+                return {
+                    type: NodeTypes.TEXT,
+                    // Remove all leading spaces
+                    value: value,
+                    lineInformation: lineInfo
+                }
+            }
     }
 }
+
 
 function getLineInfo(cheerioElement: CheerioElement, htmlString: string): LineInformation {
     const startIndex = cheerioElement.startIndex || 0; // If no startIndex, it is the root
@@ -93,28 +98,13 @@ function getLineInfo(cheerioElement: CheerioElement, htmlString: string): LineIn
 }
 
 /**
- * Function for debugging
- * @param ce 
- * @param htmlString 
- */
-function printCheerioElement(ce: CheerioElement, htmlString: string): void {
-    if (ce.name) {
-        console.log('name', ce.name, ce.attribs, getLineInfo(ce, htmlString));
-    } else {
-        if (ce.data) {
-            console.log('noname', ce.type, ce.data, getLineInfo(ce, htmlString));
-        }
-    }
-}
-
-/**
  * Converts a dictionary object into a ES6 Map
  * @param obj 
  */
 function attributeMapToArray(obj: Dictionary<string>): Attribute[] {
     const attributeArray: Attribute[] = [];
     for (const key of Object.keys(obj)) {
-        attributeArray.push({key, value: obj[key]});
+        attributeArray.push({ key, value: obj[key] });
     }
     return attributeArray;
 }
@@ -123,19 +113,21 @@ function attributeMapToArray(obj: Dictionary<string>): Attribute[] {
 export function generateAST(htmlString: string): Node {
     function traverse(ce: CheerioElement, parent?: TagNode) {
         const node = cheerioElementToNode(ce, htmlString);
-        if (parent) {
-            parent.children.push(node)
-        }
+        if (node) {
+            if (parent) {
+                parent.children.push(node)
+            }
 
-        if (ce.children) {
-            // If it has children, it has to be a TagNode
-            const tagNode = node as TagNode;
-            for (const cce of ce.children) {
-                traverse(cce, tagNode);
+            if (ce.children) {
+                // If it has children, it has to be a TagNode
+                const tagNode = node as TagNode;
+                for (const cce of ce.children) {
+                    traverse(cce, tagNode);
+                }
             }
         }
 
-        return node;
+        return node || { type: NodeTypes.ROOT, children: [], lineInformation: { lineLength: 0, lineNumber: 0 } };
     };
     // Use our own root element to wrap everything! 
     // So it is possible to deal with multiple top-level nodes

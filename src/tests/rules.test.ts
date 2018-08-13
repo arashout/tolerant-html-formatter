@@ -6,7 +6,7 @@ import { textRules } from "../rules/text.rules";
 import { tagRules } from "../rules/tag.rules";
 import { attributeRules } from "../rules/attributes.rules";
 import { commentRules } from "../rules/comment.rules";
-import { prettyPrintRuleTraces } from "../util";
+import { prettifyRuleTraces } from "../util";
 
 
 ruleTestsRunner(textRules);
@@ -24,7 +24,7 @@ function ruleTestsRunner(rules: Rule[]){
                     const ruleTraces: RuleTrace[] = [];
                     const result = formatNode(rootNode, 0, ruleTraces);
                     if (result !== rt.expectedHTML){
-                        prettyPrintRuleTraces(ruleTraces);
+                        console.log(prettifyRuleTraces(ruleTraces));
                     }
                     expect(result).toBe(rt.expectedHTML);
                 });

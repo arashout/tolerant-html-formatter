@@ -76,13 +76,18 @@ export const tagRules: TagRule[] = [
         },
         apply(tn: TagNode, indent: number, cb: FormatNode, ruleTraces: RuleTrace[]): string {
             const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
-            const childrenString = cb(tn.children[0], 0, ruleTraces);
-            const formattedString = `<${tn.name}${attributesString}>${childrenString}</${tn.name}>\n`;
+            let childrenString = cb(tn.children[0], 0, ruleTraces);
+            const formattedString = indentString(`<${tn.name}${attributesString}>${childrenString}</${tn.name}>\n`, indent);
             // Q: I have a feeling I'm going to repeat this chunk of code a bunch, should I wrap it somehow?
             if(formattedString.length <= MAX_LINE_LENGTH){
                 return formattedString;
+            } else {
+                // Indent all the strings
+                const startTag = indentString(`<${tn.name}${attributesString}>\n`, indent);
+                childrenString = indentString(childrenString + '\n', indent + INDENT_SIZE);
+                const endTag = indentString(`</${tn.name}>\n`, indent);
+                return startTag + childrenString + endTag;
             }
-            return indentString(`<${tn.name}${attributesString}>\n${' '.repeat(indent + INDENT_SIZE)}${childrenString}\n</${tn.name}>\n`, indent);
         },
         tests: [
             {
@@ -111,19 +116,23 @@ export const tagRules: TagRule[] = [
             const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
             const childrenString = tn.children.map(n => cb(n, indent + INDENT_SIZE, ruleTraces)).join('');
 
-            const openingTagString = indentString(`<${tn.name}${attributesString}>`, indent);
-            const closingTagString = indentString(`</${tn.name}>`, indent)
+            const startTag = indentString(`<${tn.name}${attributesString}>`, indent);
+            const endTag = indentString(`</${tn.name}>`, indent)
 
-            return `${openingTagString}\n${childrenString}${closingTagString}\n`;
+            return `${startTag}\n${childrenString}${endTag}\n`;
         },
         tests: [
             // TODO: Nice finally getting somewhere!
             {
-                actualHTML: `<div a="1"><p>Hello <span>Goodbye</span></p></div>`,
+                actualHTML: `<button ng-click="$ctrl.openTagForm()" ff-show=">developer" class="flex btn btn-primary mt2"
+                style="white-space: nowrap;">Create Tag</button>`,
                 expectedHTML: cleanStringHTML(`
-                <div a="1">
-                  <p>Hello <span>Goodbye</span></p>
-                </div>`),
+                <button ng-click="$ctrl.openTagForm()"
+                  ff-show=">developer"
+                  class="flex btn btn-primary mt2"
+                  style="white-space: nowrap;">
+                  Create Tag
+                </button>`),
                 description: "default print"
             },
         ]

@@ -1,4 +1,5 @@
 import { RuleTrace } from "./rules/rules";
+import { Node, NodeTypes } from "./ast";
 
 export function assertNever(x: never): never {
     throw new Error("Unexpected object: " + x);
@@ -15,10 +16,18 @@ export function cleanStringHTML(input: string): string{
     return stripIndent(input).trim();
 }
 
-export function prettyPrintRuleTraces(ruleTraces: RuleTrace[]){
-    
+// TODO: Fix this type
+export function prettifyRuleTraces(ruleTraces: RuleTrace[]){
+    const prettifiedRuleTraces = [];
     for (const rt of ruleTraces) {
-        const node = JSON.parse(rt.node_string);
-        console.log(rt.rule_name, '\n', node);
+        const node = JSON.parse(rt.node_string) as Node;
+        if(node.type === NodeTypes.TAG || node.type === NodeTypes.ROOT){
+            delete node.children;
+        }
+        prettifiedRuleTraces.push({
+            name: rt.rule_name,
+            node: node,
+        });
     }
+    return prettifiedRuleTraces;
 }
