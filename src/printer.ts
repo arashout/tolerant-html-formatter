@@ -9,15 +9,23 @@ import { commentRules } from './rules/comment.rules';
 interface PrinterResult {
     output: string,
     ruleTraces: RuleTrace[],
+    astNode?: ast.Node,
 }
 export class Printer {
     run(sourceHTML: string): PrinterResult {
         const rootNode = ast.generateAST(sourceHTML);
         const ruleTraces: RuleTrace[] = [];
         if(rootNode){
-            return { output: formatNode(rootNode, 0, ruleTraces), ruleTraces}
+            return { 
+                output: formatNode(rootNode, 0, ruleTraces), 
+                ruleTraces,
+                astNode: rootNode,
+            }
         } else {
-            return {output: '', ruleTraces};
+            return {
+                output: '', 
+                ruleTraces,
+            };
         }
     }
 }

@@ -1,14 +1,9 @@
 import * as cheerio from "cheerio";
 import util from 'util';
+import { squashWhitespace } from "./util";
 
 interface AbstractNode {
     type: NodeTypes;
-    lineInformation: LineInformation;
-}
-
-interface LineInformation {
-    lineNumber: number;
-    lineLength: number;
 }
 
 export enum NodeTypes {
@@ -47,54 +42,48 @@ export interface Attribute {
 }
 
 
-function cheerioElementToNode(ce: CheerioElement, htmlString: string): Maybe<Node> {
-    const lineInfo = getLineInfo(ce, htmlString);
-    switch (ce.type) {
+function parserNodeToASTNode(pn: parser.Node): Maybe<Node> {
+    switch (pn.type) {
         case 'tag':
             // Internal root element
-            if (ce.name === NodeTypes.ROOT) {
+            if (pn.name === NodeTypes.ROOT) {
                 return {
                     type: NodeTypes.ROOT,
                     children: [],
-                    lineInformation: lineInfo
                 }
             } else {
                 return {
                     type: NodeTypes.TAG,
-                    name: ce.name,
+                    name: pn.name,
                     children: [],
-                    attributes: attributeMapToArray(ce.attribs),
-                    lineInformation: lineInfo
+                    attributes: pn.attribs ? attributeMapToArray(pn.attribs) : [],
                 };
             }
         case 'comment':
             return {
                 type: NodeTypes.COMMENT,
-                value: ce.data as string,
-                lineInformation: lineInfo
+                value: pn.data.trim() as string,
             };
         case 'text':
-            const value = String.raw`${ce.data}`.trim();
-            if (value !== '') {
-                return {
-                    type: NodeTypes.TEXT,
-                    // Remove all leading spaces
-                    value: value,
-                    lineInformation: lineInfo
+            let value = String.raw`${pn.data}`.replace(/^[ ]+|[ ]+$/g, '')
+            if (value !== '' && value !== '\n') {
+                // If it is pure whitespace node
+                if(/^[\n\s]+$/g.test(value)){
+                    // We get an extra newline on each text node which, we usually trim
+                    // except in the case where the entire string is whitespace 
+                    value = value.replace(' ', '').slice(0, -1);
+                    return {
+                        type: NodeTypes.TEXT,
+                        value: value,
+                    }
+                } else {
+                    return {
+                        type: NodeTypes.TEXT,
+                        value: value.trim(),
+                    }
                 }
             }
     }
-}
-
-
-function getLineInfo(cheerioElement: CheerioElement, htmlString: string): LineInformation {
-    const startIndex = cheerioElement.startIndex || 0; // If no startIndex, it is the root
-    const splits = htmlString.substr(0, startIndex).split('\n');
-
-    return {
-        lineNumber: splits.length - 1, // Subtract 1 because of internal root element
-        lineLength: splits[splits.length - 1].length,
-    };
 }
 
 /**
@@ -109,22 +98,21 @@ function attributeMapToArray(obj: Dictionary<string>): Attribute[] {
     return attributeArray;
 }
 
-
 export function generateAST(htmlString: string): Maybe<Node> {
-    function traverse(ce: CheerioElement, previousLine: number, parent?: TagNode) {
-        const node = cheerioElementToNode(ce, htmlString);
+    function traverse(pe: any, parent?: TagNode) {
+        const node = parserNodeToASTNode(pe);
 
         if (node) {
             if (parent) {
                 parent.children.push(node)
             }
 
-            if (ce.children) {
+            if (pe.children) {
                 // If it has children, it has to be a TagNode
                 const tagNode = node as TagNode;
-                for (const cce of ce.children) {
-                    const childNode = traverse(cce, node.lineInformation.lineNumber, tagNode);
-                    // console.log(node.name, previousLine - node.lineInformation.lineNumber);
+                for (let i = 0; i < pe.children.length; i++) {
+                    const cpn = pe.children[i];
+                    traverse(cpn, tagNode);
                 }
             }
         }
@@ -135,8 +123,9 @@ export function generateAST(htmlString: string): Maybe<Node> {
     // So it is possible to deal with multiple top-level nodes
     htmlString = `<root>\n${htmlString}\n</root>`;
 
-    const $ = cheerio.load(htmlString, { withStartIndices: true, xmlMode: true });
+    // Cheerio need to fix their types, ignoreWhitespace is valid!
+    const $ = cheerio.load(htmlString, { ignoreWhitespace: false, xmlMode: true } as any);
     const rootCheerioElement = $("*").get()[0];
-    return traverse(rootCheerioElement, 0);
+    return traverse(rootCheerioElement);
 }
 

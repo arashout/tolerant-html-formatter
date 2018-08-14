@@ -1,7 +1,7 @@
 import { generateAST } from "../ast";
 import { formatNode } from "../printer";
 
-import { RuleTypes, RuleTest, Rule, RuleTrace } from "../rules/rules";
+import { RuleTypes, Rule, RuleTrace } from "../rules/rules";
 import { textRules } from "../rules/text.rules";
 import { tagRules } from "../rules/tag.rules";
 import { attributeRules } from "../rules/attributes.rules";

@@ -1,18 +1,16 @@
 <div class="flex flex-column flex-auto">
   <div class="page-background">
     <div class="flex flex-justify">
-
-
-      <!--fasdf-->
-      <button ng-click="$ctrl.openTagForm()" ff-show=">developer" class="flex btn btn-primary mt2" style="white-space: nowrap;">
-        Create Tag
-        With Newline
+      <!-- Seperation between parent and first child -->
+      <button ng-click="$ctrl.openTagForm()" ff-show="developer" class="flex btn btn-primary mt2" style="white-space: nowrap;">
+        Create Tag 
+        With Newline 
         What Happens
       </button>
       <i>
-          icon
-          With Newline
-          What Happens
+        icon 
+        With Newline 
+        What Happens
       </i>
     </div>
     <div class="col-12">
@@ -20,6 +18,8 @@
         <round-spinner class="mx-auto my3"></round-spinner>
       </div>
 
+
+      <!-- Seperation between siblings -->
       <div class="legacy-data-table bg-white flex flex-column border" ng-if="!$ctrl.loading">
         <table class="table-light">
           <thead>
@@ -36,12 +36,11 @@
                   tooltip-side="bottom">
                 </material-icon>
               </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      </tr>
-      </tbody>
-      </table>
     </div>
-
   </div>
 </div>

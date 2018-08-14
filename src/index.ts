@@ -4,9 +4,7 @@ import globby from 'globby';
 
 import * as util from 'util';
 
-import { generateAST } from './ast';
-import { formatNode, Printer } from './printer';
-import { RuleTrace } from './rules/rules';
+import { Printer } from './printer';
 import { prettifyRuleTraces } from './util';
 
 const readFileAsync = util.promisify(fs.readFile);
@@ -38,9 +36,12 @@ export class HTMLFormatter {
                     }
 
                     if (options.debug) {
-                        // TODO: Also add the AST
                         let p = path.resolve(path.dirname(currentPath), 'out_rt_' + path.basename(currentPath,'.html') + '.json');
                         tasks.push(writeFileAsync(p, JSON.stringify({ ruleTraces: prettifyRuleTraces(result.ruleTraces) }, null, 2)));
+
+                        p = path.resolve(path.dirname(currentPath), 'out_ast_' + path.basename(currentPath,'.html') + '.json');
+                        tasks.push(writeFileAsync(p, JSON.stringify(result.astNode, null, 2)));
+
                     }
 
                 }
