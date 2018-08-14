@@ -1,6 +1,4 @@
 import * as cheerio from "cheerio";
-import util from 'util';
-import { squashWhitespace } from "./util";
 
 interface AbstractNode {
     type: NodeTypes;

@@ -9,6 +9,5 @@ export const commentRules: CommentRule[] = [
         apply: (cn: CommentNode, indent: number): string => {
             return indentString(`<!--${cn.value}-->\n`, indent);
         },
-        
     },
 ];
