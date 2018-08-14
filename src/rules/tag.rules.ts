@@ -44,7 +44,8 @@ export const tagRules: TagRule[] = [
             {
                 actualHTML: `<input a="whatAnAttribute" b="2" c="3">`,
                 expectedHTML: cleanStringHTML(`
-                <input a="whatAnAttribute"
+                <input
+                  a="whatAnAttribute"
                   b="2"
                   c="3">`),
                 description: "do not screw up more complicated input tag"
@@ -127,7 +128,8 @@ export const tagRules: TagRule[] = [
                 actualHTML: `<button ng-click="$ctrl.openTagForm()" ff-show=">developer" class="flex btn btn-primary mt2"
                 style="white-space: nowrap;">Create Tag</button>`,
                 expectedHTML: cleanStringHTML(`
-                <button ng-click="$ctrl.openTagForm()"
+                <button
+                  ng-click="$ctrl.openTagForm()"
                   ff-show=">developer"
                   class="flex btn btn-primary mt2"
                   style="white-space: nowrap;">

@@ -3,7 +3,9 @@ import { RuleTypes, AttributeRule, indentString } from "./rules";
 import { INDENT_SIZE } from '../config';
 import { cleanStringHTML } from "../util";
 
-
+function attributeToString(attribute: Attribute): string {
+    return attribute.value === '' ? attribute.key : `${attribute.key}="${attribute.value}"`;
+}
 
 export const attributeRules: AttributeRule[] = [
     {
@@ -15,14 +17,14 @@ export const attributeRules: AttributeRule[] = [
                 return '';
             }
 
-            return ' ' + attributes.map(attribute => `${attribute.key}="${attribute.value}"`).join(' ');
+            return ' ' + attributes.map(a => attributeToString(a)).join(' ');
         },
         tests: [
             {
                 actualHTML: `<div 
                 a="1" 
-                b="2"></div>`,
-                expectedHTML: `<div a="1" b="2"></div>`,
+                b></div>`,
+                expectedHTML: `<div a="1" b></div>`,
                 description: 'all attributes should be on the same line'
             }
         ]
@@ -34,15 +36,12 @@ export const attributeRules: AttributeRule[] = [
         apply: (attributes: Attribute[], indent: number): string => {
             let attributeString = '';
             for (let i = 0; i < attributes.length; i++) {
-                const attribute = attributes[i];
-                let pair = `${attribute.key}="${attribute.value}"`;
+                let pair = attributeToString(attributes[i]);
                 
-                if(i === 0){
-                    attributeString += ` ${pair}\n`
-                } else if(i === attributes.length -1){
-                    attributeString += `${indentString(pair, indent + INDENT_SIZE)}`
+                if(i === attributes.length -1){
+                    attributeString += `\n${indentString(pair, indent + INDENT_SIZE)}`
                 } else {
-                    attributeString += `${indentString(pair, indent + INDENT_SIZE)}\n`
+                    attributeString += `\n${indentString(pair, indent + INDENT_SIZE)}`
                 }
                 
             }
@@ -52,13 +51,14 @@ export const attributeRules: AttributeRule[] = [
             {
                 actualHTML: `<div a="1" b="2" c="3"></div>`,
                 expectedHTML: cleanStringHTML(`
-                    <div a="1"
+                    <div
+                      a="1"
                       b="2"
-                      c="3"></div>
+                      c="3"
+                      d></div>
                     `),
                 description: 'should have 1 attribute per line'
             }
         ]
     },
-
 ];

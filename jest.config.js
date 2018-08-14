@@ -14,5 +14,5 @@ module.exports = {
         "json",
         "node"
     ],
-    snapshotSerializers: ['<rootDir>/src/tests/raw-serializer.js'],
+    // snapshotSerializers: ['<rootDir>/src/tests/raw-serializer.js'],
 };

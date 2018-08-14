@@ -40,7 +40,7 @@ export interface Attribute {
 }
 
 
-function parserNodeToASTNode(pn: parser.Node): Maybe<Node> {
+function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
     switch (pn.type) {
         case 'tag':
             // Internal root element
@@ -50,11 +50,14 @@ function parserNodeToASTNode(pn: parser.Node): Maybe<Node> {
                     children: [],
                 }
             } else {
+                const attributes = pn.attribs ? attributeMapToArray(pn.attribs) : [];
+                const directives = findDirectives(htmlString.slice(pn.startIndex, pn.endIndex));
+                attributes.push(...directives);
                 return {
                     type: NodeTypes.TAG,
                     name: pn.name,
                     children: [],
-                    attributes: pn.attribs ? attributeMapToArray(pn.attribs) : [],
+                    attributes
                 };
             }
         case 'comment':
@@ -98,7 +101,7 @@ function attributeMapToArray(obj: Dictionary<string>): Attribute[] {
 
 export function generateAST(htmlString: string): Maybe<Node> {
     function traverse(pe: any, parent?: TagNode) {
-        const node = parserNodeToASTNode(pe);
+        const node = parserNodeToASTNode(pe, htmlString);
 
         if (node) {
             if (parent) {
@@ -122,8 +125,47 @@ export function generateAST(htmlString: string): Maybe<Node> {
     htmlString = `<root>\n${htmlString}\n</root>`;
 
     // Cheerio need to fix their types, ignoreWhitespace is valid!
-    const $ = cheerio.load(htmlString, { ignoreWhitespace: false, xmlMode: true } as any);
+    // Also setting xmlMode removes automatic wrapping of html, body tags
+    const $ = cheerio.load(htmlString, { 
+        ignoreWhitespace: false, 
+        xmlMode: true,
+        withStartIndices: true,
+        withEndIndices: true,
+    } as CheerioOptionsInterface);
     const rootCheerioElement = $("*").get()[0];
     return traverse(rootCheerioElement);
 }
+/**
+ * Exported for testing
+ * @param rawTagHTML 
+ */
+export function findDirectives(rawTagHTML: string): Attribute[] {
+    // Step 1: Get rid of new lines
+    const tagHTML = rawTagHTML.replace('\n', '');
+    // Step 2: Find the stuff just within the opening tag to make the problem easier
+    let isInsideQuotes = false;
+    let endOpeningTagIndex = 0;
+    for (let i = 0; i < tagHTML.length; i++) {
+        const c = tagHTML[i];
+        if(c === '>' && !isInsideQuotes){
+            endOpeningTagIndex = i;
+            break;
+        } else if(c === '"'){
+            isInsideQuotes = !isInsideQuotes;
+        }
+    }
+    const openingTagHTML = tagHTML.slice(0, endOpeningTagIndex + 1);
 
+    // Step 3: Find all the directives (words with spaces around them OR word with space at start and > at end)
+    const findDirectivesRegex = /(?:\s(\w+)\s)|(?:\s(\w+))>$/g
+    let match: RegExpExecArray | null;
+    const directives: Attribute[] = [];
+    while (match = findDirectivesRegex.exec(openingTagHTML)) {
+        // JavaScript Regex is dumb man
+        directives.push({key: match[1] || match[2], value: ''});
+    }
+    
+    // Jamie
+    // ^<\S*\s(?:(?:\w+="[^"]*"\s*)|(\w+\s))+
+    return directives;
+}

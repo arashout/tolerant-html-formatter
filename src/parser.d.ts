@@ -6,5 +6,7 @@ declare namespace parser {
         data: string;
         children?: Node
         attribs?: Dictionary<string>
+        startIndex?: number;
+        endIndex?: number;
     }
 }
