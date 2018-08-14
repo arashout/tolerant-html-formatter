@@ -6,6 +6,21 @@ import { tagRules } from './rules/tag.rules';
 import { textRules } from './rules/text.rules';
 import { commentRules } from './rules/comment.rules';
 
+interface PrinterResult {
+    output: string,
+    ruleTraces: RuleTrace[],
+}
+export class Printer {
+    run(sourceHTML: string): PrinterResult {
+        const rootNode = ast.generateAST(sourceHTML);
+        const ruleTraces: RuleTrace[] = [];
+        if(rootNode){
+            return { output: formatNode(rootNode, 0, ruleTraces), ruleTraces}
+        } else {
+            return {output: '', ruleTraces};
+        }
+    }
+}
 
 export function formatNode(node: ast.Node, indent: number, ruleTrace: RuleTrace[]): string {
     switch (node.type) {
