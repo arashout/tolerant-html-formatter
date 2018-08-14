@@ -2,5 +2,8 @@
 node_modules/
 
 
-#Exclude tsc generated files
+# Exclude tsc generated files
 *.js
+
+# Exclude output from formatter
+out*
