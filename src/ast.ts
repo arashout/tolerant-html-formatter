@@ -124,7 +124,7 @@ export function generateAST(htmlString: string): Maybe<Node> {
                 const tagNode = node as TagNode;
                 for (const cce of ce.children) {
                     const childNode = traverse(cce, node.lineInformation.lineNumber, tagNode);
-                    console.log(node.name, previousLine - node.lineInformation.lineNumber);
+                    // console.log(node.name, previousLine - node.lineInformation.lineNumber);
                 }
             }
         }

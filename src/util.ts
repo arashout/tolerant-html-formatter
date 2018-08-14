@@ -1,6 +1,5 @@
 import { RuleTrace } from "./rules/rules";
 import { Node, NodeTypes } from "./ast";
-import { MAX_LINE_LENGTH } from "./config";
 
 export function assertNever(x: never): never {
     throw new Error("Unexpected object: " + x);

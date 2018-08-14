@@ -9,21 +9,6 @@ import { formatNode, Printer } from './printer';
 import { RuleTrace } from './rules/rules';
 import { prettifyRuleTraces } from './util';
 
-
-const htmlString: string = fs.readFileSync('src/tests/integration/b.html', 'utf8');
-
-const rootNode = generateAST(htmlString);
-const ruleTraces: RuleTrace[] = [];
-if (rootNode) {
-    fs.writeFileSync('out_ast.json', JSON.stringify(rootNode, null, 2));
-    fs.writeFileSync('out.html', formatNode(rootNode, 0, ruleTraces));
-    fs.writeFileSync('out_ruletraces.json', JSON.stringify({ ruleTraces: prettifyRuleTraces(ruleTraces) }, null, 2));
-    console.log('Results printed out to out files');
-}
-else {
-    console.error('Unable to parse HTML!');
-}
-
 const readFileAsync = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 
@@ -34,38 +19,40 @@ interface CLIOptions {
 export class HTMLFormatter {
     async run(input: string, options: CLIOptions) {
         const paths = await globby(input);
-        const tasks = [];
+        const tasks: Promise<void>[] = [];
 
-        for (let i = 0; i < paths.length; ++i) {
-            const t = readFileAsync(paths[i], { encoding: 'utf8' }).then(source => {
-                console.log(path.relative(__dirname, paths[i]));
+        for (const currentPath of paths) {
+            await readFileAsync(currentPath, { encoding: 'utf8' }).then(source => {
+                console.log('Reading HTML from: ', path.relative(__dirname, currentPath));
 
                 const result = new Printer().run(source);
                 if (result.output === '') {
-                    console.error('Could not parse HTML from: ' + path);
+                    console.error('Could not parse HTML from: ' + currentPath);
                 } else {
-                    return this.writeFile(paths[i], result.output, options.overwrite);
+                    // TODO: Should these in a method (Had a hard time coming up with a good name)
+                    if (options.overwrite) {
+                        tasks.push(writeFileAsync(currentPath, result.output));
+                    } else {
+                        const p = path.resolve(path.dirname(currentPath), 'out_' + path.basename(currentPath));
+                        tasks.push(writeFileAsync(p, result.output));
+                    }
+
+                    if (options.debug) {
+                        // TODO: Also add the AST
+                        let p = path.resolve(path.dirname(currentPath), 'out_rt_' + path.basename(currentPath,'.html') + '.json');
+                        tasks.push(writeFileAsync(p, JSON.stringify({ ruleTraces: prettifyRuleTraces(result.ruleTraces) }, null, 2)));
+                    }
+
                 }
 
-            });
-
-            tasks.push(t);
+            })
+                .catch(reason => {
+                    console.error('Failed to read file: ' + reason);
+                })
         }
 
         return Promise.all(tasks).then(() => {
             console.log('✨  Done!');
         });
-    }
-
-    private writeFile(writePath: string, content: string, overwrite: boolean): Promise<void> {
-        let p: string;
-
-        if (overwrite) {
-            p = writePath;
-        } else {
-            p = path.resolve(path.dirname(writePath), 'out_' + path.basename(writePath));
-        }
-
-        return writeFileAsync(p, content);
     }
 }
