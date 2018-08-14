@@ -1,9 +1,11 @@
 .vs/
 node_modules/
+.DS_Store
 
 
 # Exclude tsc generated files
 *.js
+!jest.config.js
 
 # Exclude output from formatter
 out*
