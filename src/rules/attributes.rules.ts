@@ -4,7 +4,7 @@ import { INDENT_SIZE, MAX_LINE_LENGTH } from '../config';
 import { cleanStringHTML } from "../util";
 
 function attributeToString(attribute: Attribute): string {
-    return attribute.value === '' ? attribute.key : `${attribute.key}="${attribute.value}"`;
+    return attribute.value === null ? attribute.key : `${attribute.key}="${attribute.value}"`;
 }
 
 export const attributeRules: AttributeRule[] = [

@@ -20,7 +20,7 @@ export interface RootNode extends AbstractNode {
 export interface TagNode extends AbstractNode {
     type: NodeTypes.TAG;
     children: Node[];
-    attributes: { key: string, value: string }[];
+    attributes: Attribute[];
     name: string; // This cannot be an enum because of arbitary tag names
 }
 
@@ -36,7 +36,7 @@ export interface CommentNode extends AbstractNode {
 
 export interface Attribute {
     key: string;
-    value: string;
+    value: string | null;
 }
 
 
@@ -50,7 +50,8 @@ function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
                     children: [],
                 }
             } else {
-                const attributes = pn.attribs ? attributeMapToArray(pn.attribs) : [];
+                // TODO: This slice might be expensive, might want to convert to an array to avoid copying new string?
+                const attributes = dictToArray(findDirectives(htmlString.slice(pn.startIndex, pn.endIndex), pn.attribs ? pn.attribs : {}));
                 return {
                     type: NodeTypes.TAG,
                     name: pn.name,
@@ -86,10 +87,10 @@ function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
 }
 
 /**
- * Converts a dictionary object into a ES6 Map
+ * Converts a dictionary into an array of key value pairs
  * @param obj 
  */
-function attributeMapToArray(obj: Dictionary<string>): Attribute[] {
+function dictToArray(obj: Dictionary<string | null>): Attribute[] {
     const attributeArray: Attribute[] = [];
     for (const key of Object.keys(obj)) {
         attributeArray.push({ key, value: obj[key] });
@@ -133,47 +134,49 @@ export function generateAST(htmlString: string): Maybe<Node> {
     const rootCheerioElement = $("*").get()[0];
     return traverse(rootCheerioElement);
 }
-// /**
-//  * Exported for testing
-//  * @param rawTagHTML 
-//  */
-// export function findDirectives(rawTagHTML: string): Attribute[] {
-//     // Step 1: Squash all the white-space
-//     const tagHTML = rawTagHTML.replace(/\s+/g, ' ');
 
-//     // Step 2: Find the stuff just within the opening tag to make the problem easier
-//     let isInsideQuotes = false;
-//     let endOpeningTagIndex = 0;
-//     for (let i = 0; i < tagHTML.length; i++) {
-//         const c = tagHTML[i];
+/**
+ * 
+ * @param rawTagHTML 
+ * @param attributesMap 
+ */
+export function findDirectives(rawTagHTML: string, attributesMap: Dictionary<string>): Dictionary<string | null> {
+    // Step 1: Squash all the white-space
+    const tagHTML = rawTagHTML.replace(/\s+/g, ' ');
 
-//         if(c === '>' && !isInsideQuotes){
-//             endOpeningTagIndex = i;
-//             break;
-//         } else if(c === '"'){
-//             isInsideQuotes = !isInsideQuotes;
-//         }
-//     }
-//     const openingTagHTML = tagHTML.slice(0, endOpeningTagIndex + 1);
+    // Step 2: Find the stuff just within the opening tag to make the problem easier
+    let isInsideQuotes = false;
+    let endOpeningTagIndex = 0;
+    for (let i = 0; i < tagHTML.length; i++) {
+        const c = tagHTML[i];
 
-//     // Step 3: Find all the directives (words with spaces around them OR word with space at start and > at end)
-//     const findDirectivesRegex = /(?:\s(\w+)\s)|(?:\s(\w+))>$/g
-//     let match: RegExpExecArray | null;
-//     const directives: Attribute[] = [];
+        if(c === '>' && !isInsideQuotes){
+            endOpeningTagIndex = i;
+            break;
+        } else if(c === '"'){
+            isInsideQuotes = !isInsideQuotes;
+        }
+    }
+    const openingTagHTML = tagHTML.slice(0, endOpeningTagIndex + 1);
 
-//     while (match = findDirectivesRegex.exec(openingTagHTML)) {
-//         // Caveat, the regex above also matches `class="flex btn primary"` the "btn" portion so I need to weed those out
-//         let countQuotes = 0; // If there are an odd number of quotes we know we found a false positive
-//         for (let i = match.index; i < openingTagHTML.length; i++) {
-//             const c = openingTagHTML[i];
-//             if(c === '"'){
-//                 countQuotes++;
-//             }
-//         }
-//         if(countQuotes % 2 === 0){
-//             directives.push({key: match[1] || match[2], value: ''});
-//         }
-//     }
-    
-//     return directives;
-// }
+    // Step 3: Find all the directives (words with spaces around them OR word with space at start and > at end)
+    const findDirectivesRegex = /(?:\s([-\w]+)\s)|(?:\s([-\w]+))>$/g
+    let match: RegExpExecArray | null;
+    const newAttributesMap: Dictionary<string | null> = Object.assign({}, attributesMap);
+
+    while (match = findDirectivesRegex.exec(openingTagHTML)) {
+        // Caveat, the regex above also matches `class="flex btn primary"` the "btn" portion so I need to weed those out
+        let countQuotes = 0; // If there are an odd number of quotes we know we found a false positive
+        for (let i = match.index; i < openingTagHTML.length; i++) {
+            const c = openingTagHTML[i];
+            if(c === '"'){
+                countQuotes++;
+            }
+        }
+        if(countQuotes % 2 === 0){
+            const key = match[1] || match[2];
+            newAttributesMap[key] = null; // Null indicates a directive!
+        }
+    }
+    return newAttributesMap;
+}

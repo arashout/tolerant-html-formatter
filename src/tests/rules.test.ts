@@ -1,7 +1,7 @@
 import * as util from 'util';
 
 import { generateAST } from "../ast";
-import { formatNode } from "../printer";
+import { formatNode, Printer } from "../printer";
 
 import { RuleTypes, Rule, RuleTrace } from "../rules/rules";
 import { textRules } from "../rules/text.rules";
@@ -16,24 +16,20 @@ ruleTestsRunner(commentRules);
 ruleTestsRunner(attributeRules);
 ruleTestsRunner(tagRules);
 
-function ruleTestsRunner(rules: Rule[]){
-    for (const r of rules) {
-        if (r.tests) {
-            for (const rt of r.tests) {
-                test(`testing ${RuleTypes[r.type]} rule: ${r.name}\n${rt.description}`, () => {
-                    const rootNode = generateAST(rt.actualHTML);
+function ruleTestsRunner(rules: Rule[]) {
+    test(`test-rules-${RuleTypes[rules[0].type]}`, () => {
+        for (const r of rules) {
+            if (r.tests) {
+                for (const rt of r.tests) {
+                    const p = new Printer();
+                    const result = p.run(rt.actualHTML);
                     // Ugly workaround for custom failure messages
-                    const ruleTraces: RuleTrace[] = [];
-                    expect(rootNode).not.toBeNull();
-                    if(rootNode){
-                        const result = formatNode(rootNode, 0, ruleTraces);
-                        if (result !== rt.expectedHTML){
-                            console.log(util.inspect(prettifyRuleTraces(ruleTraces), false, null));
-                        }
-                        expect(result).toBe(rt.expectedHTML);
+                    if (result.output !== rt.expectedHTML) {
+                        console.log(util.inspect(prettifyRuleTraces(result.ruleTraces), false, null));
                     }
-                });
+                    expect(result.output).toBe(rt.expectedHTML);
+                };
             }
         }
-    }
+    });
 }
