@@ -1,9 +1,9 @@
-import { TagNode, NodeTypes } from "../ast";
-import { RuleTypes, TagRule, FormatNode, applyFirstRule, indentString, emptyStringFunc, RuleTrace } from "./rules";
+import { NodeTypes, TagNode } from '../ast';
 import { INDENT_SIZE, MAX_LINE_LENGTH } from '../config';
+import { applyFirstRule, emptyStringFunc, FormatNode, indentString, RuleTrace, RuleTypes, TagRule } from './rules';
 
-import { attributeRules } from "./attributes.rules";
-import { cleanStringHTML, squashWhitespace } from "../util";
+import { cleanStringHTML, squashWhitespace } from '../util';
+import { attributeRules } from './attributes.rules';
 
 // https://www.w3.org/TR/html/syntax.html#writing-html-documents-elements
 const voidElements = [
@@ -39,7 +39,7 @@ export const tagRules: TagRule[] = [
             {
                 actualHTML: `<input a="whatAnAttribute">`,
                 expectedHTML: `<input a="whatAnAttribute"/>`,
-                description: "do not screw up simple input tag"
+                description: 'do not screw up simple input tag',
             },
             {
                 actualHTML: `<input a="whatAnAttribute" b="2" c="3">`,
@@ -48,9 +48,9 @@ export const tagRules: TagRule[] = [
                   a="whatAnAttribute"
                   b="2"
                   c="3"/>`),
-                description: "do not screw up more complicated input tag"
+                description: 'do not screw up more complicated input tag',
             },
-        ]
+        ],
     },
     {
         type: RuleTypes.TAG_RULE,
@@ -66,9 +66,9 @@ export const tagRules: TagRule[] = [
             {
                 actualHTML: `<div a="whatAnAttribute"></div><div></div>`,
                 expectedHTML: `<div a="whatAnAttribute"></div>\n<div></div>`,
-                description: "2 simple tags"
+                description: '2 simple tags',
             },
-        ]
+        ],
     },
     {
         type: RuleTypes.TAG_RULE,
@@ -81,8 +81,8 @@ export const tagRules: TagRule[] = [
             let text = cb(tn.children[0], 0, ruleTraces);
 
             // TODO: Should I be counting indentation?
-            let singleLineResult = indentString(`<${tn.name}${attributesString}>${squashWhitespace(text)}</${tn.name}>`, indent);
-            if(singleLineResult.length <= MAX_LINE_LENGTH){
+            const singleLineResult = indentString(`<${tn.name}${attributesString}>${squashWhitespace(text)}</${tn.name}>`, indent);
+            if (singleLineResult.length <= MAX_LINE_LENGTH) {
                 return singleLineResult + '\n';
             } else {
                 // Indent all the strings
@@ -96,19 +96,19 @@ export const tagRules: TagRule[] = [
             {
                 actualHTML: `<div a="1">This is text</div>`,
                 expectedHTML: `<div a="1">This is text</div>`,
-                description: "simple text node"
+                description: 'simple text node',
             },
             {
                 actualHTML: `<div a="1">Super long stringggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg</div>`,
                 expectedHTML: cleanStringHTML(`<div a="1">\n  Super long stringggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg\n</div>`),
-                description: "break text node onto a new line"
+                description: 'break text node onto a new line',
             },
             {
                 actualHTML: `<i>icon\nWith Newline\n What Happens</i>`,
                 expectedHTML: `<i>icon With Newline What Happens</i>`,
-                description: 'squash multiple lines into single lines if we can'
-            }
-        ]
+                description: 'squash multiple lines into single lines if we can',
+            },
+        ],
     },
     {
         type: RuleTypes.TAG_RULE,
@@ -116,16 +116,17 @@ export const tagRules: TagRule[] = [
         shouldApply: (_: TagNode): boolean => true,
         apply: (tn: TagNode, indent: number, cb: FormatNode, ruleTraces: RuleTrace[]): string => {
             const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
-            const childrenString = tn.children.map(n => cb(n, indent + INDENT_SIZE, ruleTraces)).join('');
+            const childrenString = tn.children.map((n) => cb(n, indent + INDENT_SIZE, ruleTraces)).join('');
 
             const startTag = indentString(`<${tn.name}${attributesString}>`, indent);
-            const endTag = indentString(`</${tn.name}>`, indent)
+            const endTag = indentString(`</${tn.name}>`, indent);
 
             return `${startTag}\n${childrenString}${endTag}\n`;
         },
         tests: [
             {
-                actualHTML: `<button ng-click="$ctrl.openTagForm()" ff-show=">developer" class="flex btn btn-primary mt2"
+                actualHTML: `<button ng-click="$ctrl.openTagForm()"
+                ff-show=">developer" class="flex btn btn-primary mt2"
                 style="white-space: nowrap;">Create Tag</button>`,
                 expectedHTML: cleanStringHTML(`
                 <button
@@ -135,7 +136,7 @@ export const tagRules: TagRule[] = [
                   style="white-space: nowrap;">
                   Create Tag
                 </button>`),
-                description: "default print"
+                description: 'default print',
             },
             {
                 actualHTML: cleanStringHTML(`
@@ -143,7 +144,7 @@ export const tagRules: TagRule[] = [
                   testDiv
                   <p>testP</p
                 </div>
-                
+
                 <div class="class2"></div>`),
                 expectedHTML: cleanStringHTML(`
                 <div class="class1">
@@ -153,9 +154,8 @@ export const tagRules: TagRule[] = [
 
                 <div class="class2"></div>
                 `),
-                description: "multiple root elements"
+                description: 'multiple root elements',
             },
-        ]
+        ],
     },
 ];
-

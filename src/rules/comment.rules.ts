@@ -1,5 +1,5 @@
-import { CommentNode } from "../ast";
-import { RuleTypes, CommentRule, indentString } from "./rules";
+import { CommentNode } from '../ast';
+import { CommentRule, indentString, RuleTypes } from './rules';
 
 export const commentRules: CommentRule[] = [
     {

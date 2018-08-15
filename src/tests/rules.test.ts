@@ -1,15 +1,14 @@
 import * as util from 'util';
 
-import { generateAST } from "../ast";
-import { formatNode, Printer } from "../printer";
+import { generateAST } from '../ast';
+import { formatNode, Printer } from '../printer';
 
-import { RuleTypes, Rule, RuleTrace } from "../rules/rules";
-import { textRules } from "../rules/text.rules";
-import { tagRules } from "../rules/tag.rules";
-import { attributeRules } from "../rules/attributes.rules";
-import { commentRules } from "../rules/comment.rules";
-import { prettifyRuleTraces } from "../util";
-
+import { attributeRules } from '../rules/attributes.rules';
+import { commentRules } from '../rules/comment.rules';
+import { Rule, RuleTrace, RuleTypes } from '../rules/rules';
+import { tagRules } from '../rules/tag.rules';
+import { textRules } from '../rules/text.rules';
+import { prettifyRuleTraces } from '../util';
 
 ruleTestsRunner(textRules);
 ruleTestsRunner(commentRules);
@@ -28,7 +27,7 @@ function ruleTestsRunner(rules: Rule[]) {
                         console.log(util.inspect(prettifyRuleTraces(result.ruleTraces), false, null));
                     }
                     expect(result.output).toBe(rt.expectedHTML);
-                };
+                }
             }
         }
     });

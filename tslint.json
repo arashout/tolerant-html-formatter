@@ -6,6 +6,12 @@
     "jsRules": {},
     "rules": {
         "no-console": false,
+        "quotemark": [true, "single"],
+        "interface-name": false,
+        "no-unused-variable": true,
+        "no-unused-expression": true,
+        "object-literal-sort-keys":false,
+        "max-line-length": false
     },
     "rulesDirectory": []
 }

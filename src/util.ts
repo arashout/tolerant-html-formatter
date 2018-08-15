@@ -1,40 +1,40 @@
-import { RuleTrace } from "./rules/rules";
-import { Node, NodeTypes } from "./ast";
+import { Node, NodeTypes } from './ast';
+import { RuleTrace } from './rules/rules';
 
 export function assertNever(x: never): never {
-    throw new Error("Unexpected object: " + x);
+    throw new Error('Unexpected object: ' + x);
 }
 
 type stringFunc =  (s: string) => string; // LOL
 /**
  * Function that removes hanging indentation off of HTML
  * made with string templates, and trims the leading/trailing newlines
- * @param s 
+ * @param s
  */
-export function cleanStringHTML(s: string): string{
+export function cleanStringHTML(s: string): string {
     const stripIndent: stringFunc = require('strip-indent');
     return stripIndent(s).trim();
 }
 
 interface PrettyRuleTrace {
-    name: string,
-    node: Node,
-    meta?: Dictionary<Primitive>
+    name: string;
+    node: Node;
+    meta?: Dictionary<Primitive>;
 }
 
-export function prettifyRuleTraces(ruleTraces: RuleTrace[]): PrettyRuleTrace[]{
+export function prettifyRuleTraces(ruleTraces: RuleTrace[]): PrettyRuleTrace[] {
     const prettifiedRuleTraces = [];
     for (const rt of ruleTraces) {
         const node = JSON.parse(rt.node_string) as Node;
         // It's not helpful to see the children of the Node, so we delete it to make the logs easier to read
-        if(node.type === NodeTypes.TAG || node.type === NodeTypes.ROOT){
+        if (node.type === NodeTypes.TAG || node.type === NodeTypes.ROOT) {
             delete node.children;
         }
         let prettyRuleTrace = {
             name: rt.rule_name,
-            node: node,
+            node,
         };
-        if(rt.meta){
+        if (rt.meta) {
             prettyRuleTrace = Object.assign(prettyRuleTrace, {meta: rt.meta});
         }
 
@@ -43,6 +43,6 @@ export function prettifyRuleTraces(ruleTraces: RuleTrace[]): PrettyRuleTrace[]{
     return prettifiedRuleTraces;
 }
 
-export function squashWhitespace(s: string): string{
+export function squashWhitespace(s: string): string {
     return s.replace(/[\n\s]+/g, ' ');
 }

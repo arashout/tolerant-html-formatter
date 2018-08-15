@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import * as path from 'path'
 import globby from 'globby';
+import * as path from 'path';
 
 import * as util from 'util';
 
@@ -15,12 +15,12 @@ interface CLIOptions {
     debug: boolean;
 }
 export class HTMLFormatter {
-    async run(input: string, options: CLIOptions) {
+    public async run(input: string, options: CLIOptions) {
         const paths = await globby(input);
-        const tasks: Promise<void>[] = [];
+        const tasks: Array<Promise<void>> = [];
 
         for (const currentPath of paths) {
-            await readFileAsync(currentPath, { encoding: 'utf8' }).then(source => {
+            await readFileAsync(currentPath, { encoding: 'utf8' }).then((source) => {
                 console.log('Reading HTML from: ', path.relative(__dirname, currentPath));
 
                 const result = new Printer().run(source);
@@ -36,19 +36,19 @@ export class HTMLFormatter {
                     }
 
                     if (options.debug) {
-                        let p = path.resolve(path.dirname(currentPath), 'out_rt_' + path.basename(currentPath,'.html') + '.json');
+                        let p = path.resolve(path.dirname(currentPath), 'out_rt_' + path.basename(currentPath, '.html') + '.json');
                         tasks.push(writeFileAsync(p, JSON.stringify({ ruleTraces: prettifyRuleTraces(result.ruleTraces) }, null, 2)));
 
-                        p = path.resolve(path.dirname(currentPath), 'out_ast_' + path.basename(currentPath,'.html') + '.json');
+                        p = path.resolve(path.dirname(currentPath), 'out_ast_' + path.basename(currentPath, '.html') + '.json');
                         tasks.push(writeFileAsync(p, JSON.stringify(result.astNode, null, 2)));
                     }
 
                 }
 
             })
-                .catch(reason => {
+                .catch((reason) => {
                     console.error('Failed to read file: ' + reason);
-                })
+                });
         }
 
         return Promise.all(tasks).then(() => {

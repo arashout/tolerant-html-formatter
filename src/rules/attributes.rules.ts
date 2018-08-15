@@ -1,7 +1,7 @@
-import { Attribute } from "../ast";
-import { RuleTypes, AttributeRule, indentString, Rule, emptyStringFunc } from "./rules";
+import { Attribute } from '../ast';
 import { INDENT_SIZE, MAX_LINE_LENGTH } from '../config';
-import { cleanStringHTML } from "../util";
+import { cleanStringHTML } from '../util';
+import { AttributeRule, emptyStringFunc, indentString, Rule, RuleTypes } from './rules';
 
 function attributeToString(attribute: Attribute): string {
     return attribute.value === null ? attribute.key : `${attribute.key}="${attribute.value}"`;
@@ -11,7 +11,7 @@ export const attributeRules: AttributeRule[] = [
     {
         type: RuleTypes.ATTRIBUTE_RULE,
         name: 'sameLine',
-        shouldApply: function(this: AttributeRule, attributes: Attribute[], indent?: number):boolean{
+        shouldApply(this: AttributeRule, attributes: Attribute[], indent?: number): boolean {
             const formattedString = this.apply(attributes, indent || INDENT_SIZE, emptyStringFunc, []);
             // TODO: Going to have to ask Crob about how exactly he wants the attributes to behave
             // console.log(formattedString);
@@ -23,22 +23,22 @@ export const attributeRules: AttributeRule[] = [
                 return '';
             }
 
-            return ' ' + attributes.map(a => attributeToString(a)).join(' ');
+            return ' ' + attributes.map((a) => attributeToString(a)).join(' ');
         },
         tests: [
             {
-                actualHTML: `<div 
-                a="1" 
+                actualHTML: `<div
+                a="1"
                 b></div>`,
                 expectedHTML: `<div a="1" b></div>`,
-                description: 'all attributes should be on the same line'
-            }
+                description: 'all attributes should be on the same line',
+            },
         ],
     },
     {
         type: RuleTypes.ATTRIBUTE_RULE,
         name: 'onePerLineTwo',
-        shouldApply: function(attributes: Attribute[]):boolean{
+        shouldApply(attributes: Attribute[]): boolean {
             return attributes.length === 2;
         },
         apply: (attributes: Attribute[], _: number): string => {
@@ -46,16 +46,16 @@ export const attributeRules: AttributeRule[] = [
                 return '';
             }
 
-            return ' ' + attributes.map(a => attributeToString(a)).join(' ');
+            return ' ' + attributes.map((a) => attributeToString(a)).join(' ');
         },
         tests: [
             {
-                actualHTML: `<div 
-                a="1" 
+                actualHTML: `<div
+                a="1"
                 b></div>`,
                 expectedHTML: `<div a="1" b></div>`,
-                description: 'all attributes should be on the same line'
-            }
+                description: 'all attributes should be on the same line',
+            },
         ],
     },
     {
@@ -65,17 +65,17 @@ export const attributeRules: AttributeRule[] = [
         apply: (attributes: Attribute[], indent: number): string => {
             let attributeString = '';
             for (let i = 0; i < attributes.length; i++) {
-                let pair = attributeToString(attributes[i]);
-                
-                if(i === attributes.length -1){
-                    attributeString += `\n${indentString(pair, indent + INDENT_SIZE)}`
+                const pair = attributeToString(attributes[i]);
+
+                if (i === attributes.length - 1) {
+                    attributeString += `\n${indentString(pair, indent + INDENT_SIZE)}`;
                 } else {
-                    attributeString += `\n${indentString(pair, indent + INDENT_SIZE)}`
+                    attributeString += `\n${indentString(pair, indent + INDENT_SIZE)}`;
                 }
-                
+
             }
             return attributeString;
-        }, 
+        },
         tests: [
             {
                 actualHTML: `<div a="1" b="2" c="3" d class="flex btn button"></div>`,
@@ -87,8 +87,8 @@ export const attributeRules: AttributeRule[] = [
                       d
                       class="flex btn button"></div>
                     `),
-                description: 'should have 1 attribute per line'
-            }
+                description: 'should have 1 attribute per line',
+            },
         ],
     },
-]
+];
