@@ -1,9 +1,10 @@
 import { NodeTypes, TagNode } from '../ast';
 import { INDENT_SIZE, MAX_LINE_LENGTH } from '../config';
-import { applyFirstRule, emptyStringFunc, FormatNode, indentString, RuleTrace, RuleTypes, TagRule } from './rules';
+import { applyFirstRule, indentString, RuleTrace, RuleTypes, TagRule } from './rules';
 
 import { cleanStringHTML, squashWhitespace } from '../util';
 import { attributeRules } from './attributes.rules';
+import { formatNode } from '../common/format';
 
 // https://www.w3.org/TR/html/syntax.html#writing-html-documents-elements
 const voidElements = [
@@ -27,12 +28,25 @@ const voidElements = [
 export const tagRules: TagRule[] = [
     {
         type: RuleTypes.TAG_RULE,
+        name: 'pre',
+        shouldApply(tn: TagNode): boolean {
+            return tn.name === 'pre';
+        },
+        apply(tn: TagNode, indent: number, ruleTraces: RuleTrace[]): string {
+            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, tn, ruleTraces);
+            return tn.raw + '\n';
+        },
+        tests: [
+        ],
+    },
+    {
+        type: RuleTypes.TAG_RULE,
         name: 'voidTag', // https://stackoverflow.com/a/10599002/5258887
         shouldApply(tn: TagNode): boolean {
             return voidElements.indexOf(tn.name) !== -1;
         },
-        apply(tn: TagNode, indent: number, _: FormatNode, ruleTraces: RuleTrace[]): string {
-            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
+        apply(tn: TagNode, indent: number, ruleTraces: RuleTrace[]): string {
+            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, tn, ruleTraces);
             return indentString(`<${tn.name}${attributesString}/>`, indent) + '\n';
         },
         tests: [
@@ -58,8 +72,8 @@ export const tagRules: TagRule[] = [
         shouldApply(tn: TagNode): boolean {
             return tn.children.length === 0;
         },
-        apply(tn: TagNode, indent: number, _: FormatNode, ruleTraces: RuleTrace[]): string {
-            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
+        apply(tn: TagNode, indent: number, ruleTraces: RuleTrace[]): string {
+            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, tn, ruleTraces);
             return indentString(`<${tn.name}${attributesString}></${tn.name}>`, indent) + '\n';
         },
         tests: [
@@ -76,9 +90,9 @@ export const tagRules: TagRule[] = [
         shouldApply(tn: TagNode): boolean {
             return tn.children.length === 1 && tn.children[0].type === NodeTypes.TEXT;
         },
-        apply(tn: TagNode, indent: number, cb: FormatNode, ruleTraces: RuleTrace[]): string {
-            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
-            let text = cb(tn.children[0], 0, ruleTraces);
+        apply(tn: TagNode, indent: number, ruleTraces: RuleTrace[]): string {
+            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, tn, ruleTraces);
+            let text = formatNode(tn.children[0], 0, tn, ruleTraces);
 
             // TODO: Should I be counting indentation?
             const singleLineResult = indentString(`<${tn.name}${attributesString}>${squashWhitespace(text)}</${tn.name}>`, indent);
@@ -114,9 +128,9 @@ export const tagRules: TagRule[] = [
         type: RuleTypes.TAG_RULE,
         name: 'defaultTag',
         shouldApply: (_: TagNode): boolean => true,
-        apply: (tn: TagNode, indent: number, cb: FormatNode, ruleTraces: RuleTrace[]): string => {
-            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
-            const childrenString = tn.children.map((n) => cb(n, indent + INDENT_SIZE, ruleTraces)).join('');
+        apply: (tn: TagNode, indent: number, ruleTraces: RuleTrace[]): string => {
+            const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, tn, ruleTraces);
+            const childrenString = tn.children.map((n) => formatNode(n, indent + INDENT_SIZE, tn, ruleTraces)).join('');
 
             const startTag = indentString(`<${tn.name}${attributesString}>`, indent);
             const endTag = indentString(`</${tn.name}>`, indent);
@@ -138,24 +152,24 @@ export const tagRules: TagRule[] = [
                 </button>`),
                 description: 'default print',
             },
-            {
-                actualHTML: cleanStringHTML(`
-                <div class="class1">
-                  testDiv
-                  <p>testP</p
-                </div>
+            // {
+            //     actualHTML: cleanStringHTML(`
+            //     <div class="class1">
+            //       testDiv
+            //       <p>testP</p
+            //     </div>
 
-                <div class="class2"></div>`),
-                expectedHTML: cleanStringHTML(`
-                <div class="class1">
-                  testDiv
-                  <p>testP</p
-                </div>
+            //     <div class="class2"></div>`),
+            //     expectedHTML: cleanStringHTML(`
+            //     <div class="class1">
+            //       testDiv
+            //       <p>testP</p
+            //     </div>
 
-                <div class="class2"></div>
-                `),
-                description: 'multiple root elements',
-            },
+            //     <div class="class2"></div>
+            //     `),
+            //     description: 'multiple root elements',
+            // },
         ],
     },
 ];

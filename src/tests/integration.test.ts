@@ -1,58 +1,73 @@
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
 
-import { generateAST } from "../ast";
-import { formatNode, Printer } from "../printer";
+import { Printer } from '../printer';
+import { prettifyRuleTraces, assertNever } from '../util';
 
-import { RuleTrace } from "../rules/rules";
-import { prettifyRuleTraces } from '../util';
-
-const integrationDir = path.resolve(__dirname, 'integration/')
+const integrationDir = path.resolve(__dirname, 'integration/');
 const fileNames = fs.readdirSync(integrationDir);
 const baseFileNames = fileNames
-    .map( fn => fn.split('-')[1])
-    .filter( fn => fn.endsWith('.html'))
+    .map( (fn) => fn.split('-')[1])
+    .filter( (fn) => fn.endsWith('.html'))
     .filter( (fn, i, a) => a.indexOf(fn) === i);
 
-const sourcePrefix = 'source-';
-const expectedPrefix = 'output-';
-const actualPrefix = 'actual-';
-const basePath = path.resolve(__dirname,'integration');
+type filePrefixes = 'source-' | 'output-' | 'actual-';
 
-for(const baseName of baseFileNames){
-    const sourceHTML = fs.readFileSync(path.resolve(__dirname, 'integration', `${sourcePrefix}${baseName}`), {encoding:'utf8'});
-    const expectedHTML = fs.readFileSync(path.resolve(__dirname, 'integration', `${expectedPrefix}${baseName}`), {encoding:'utf8'});
+const baseTestPath = path.resolve(__dirname, 'integration');
 
-    test(`test-integration-${baseName}`, ()=> {
-        // TODO: Probably should clean this up
+for (const baseName of baseFileNames) {
+    const sourceHTML = fs.readFileSync(getFilePath('source-', baseName, 'html'), {encoding: 'utf8'});
+    const expectedHTML = fs.readFileSync(getFilePath('output-', baseName, 'html'), {encoding: 'utf8'});
+
+    test(`test-integration-${baseName}`, () => {
         // Get rid of previous debugging files
         try {
-            fs.unlinkSync(path.resolve(basePath, `${actualPrefix}${baseName}`));
-            fs.unlinkSync(path.resolve(basePath,`${actualPrefix}rt-${path.basename(baseName,'.html') + '.json'}`));
-            fs.unlinkSync(path.resolve(basePath,`${actualPrefix}ast-${path.basename(baseName,'.html') + '.json'}`));
+            fs.unlink(getFilePath('actual-', baseName, 'html'), ()=>null);
+            fs.unlink(getFilePath('actual-', baseName, 'rule-traces'),()=>null);
+            fs.unlink(getFilePath('actual-', baseName, 'ast'), ()=>null);
         } catch (_) {}
 
         const printer  = new Printer();
         const result = printer.run(sourceHTML);
         // Ugly workaround for getting on fail debugging information
-        if(result.output !== expectedHTML){
-            fs.writeFileSync(path.resolve(__dirname,'integration',`${actualPrefix}${baseName}`), result.output);
+        if (result.output !== expectedHTML) {
+            fs.writeFileSync(getFilePath('actual-', baseName, 'html'), result.output);
             fs.writeFileSync(
-                path.resolve(basePath,`${actualPrefix}rt-${path.basename(baseName,'.html') + '.json'}`), 
-                JSON.stringify({ ruleTraces: prettifyRuleTraces(result.ruleTraces) }, null, 2)
+                getFilePath('actual-', baseName, 'rule-traces'),
+                JSON.stringify({ ruleTraces: prettifyRuleTraces(result.ruleTraces) }, null, 2),
             );
             fs.writeFileSync(
-                path.resolve(basePath,`${actualPrefix}ast-${path.basename(baseName,'.html') + '.json'}`), 
-                JSON.stringify(result.astNode, null, 2)
+                getFilePath('actual-', baseName, 'ast'),
+                JSON.stringify(result.astNode, null, 2),
             );
         }
         expect(result.output).toBe(expectedHTML);
-    })
+    });
 }
 
-// function getFilePath(
-//     type: 'actual' | 'expected' | 'source', 
-//     contentType: 'ast' | 'rule-traces' | 'html'): string {
-    
-
-// }
+function getFilePath(
+    prefix: filePrefixes,
+    baseName: string,
+    contentType: 'ast' | 'rule-traces' | 'html',
+): string {
+        // Exhaustive switch works with nested switch statements!
+        switch (prefix) {
+            case 'actual-':
+                switch (contentType) {
+                    case 'html':
+                        return path.resolve(baseTestPath, `${prefix}${baseName}`);
+                    case 'ast':
+                        return path.resolve(baseTestPath, `${prefix}ast-${path.basename(baseName, '.html') + '.json'}`);
+                    case 'rule-traces':
+                        return path.resolve(baseTestPath, `${prefix}rt-${path.basename(baseName, '.html') + '.json'}`);
+                    default:
+                        return assertNever(contentType);
+                }
+            case 'output-':
+                return path.resolve(baseTestPath, `${prefix}${baseName}`);
+            case 'source-':
+                return path.resolve(baseTestPath, `${prefix}${baseName}`);
+            default:
+                return assertNever(prefix);
+        }
+}

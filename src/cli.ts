@@ -1,7 +1,7 @@
 import cmd from 'commander';
 import { HTMLFormatter } from '.';
-const pj = require('../package.json')
-console.log(pj.version)
+const pj = require('../package.json');
+console.log(pj.version);
 
 export function run(args: string[]) {
     cmd

@@ -1,24 +1,21 @@
-import * as ast from './ast';
-import { assertNever } from './util';
-
-import { commentRules } from './rules/comment.rules';
-import { applyFirstRule, emptyStringFunc, RuleTrace } from './rules/rules';
-import { tagRules } from './rules/tag.rules';
-import { textRules } from './rules/text.rules';
+import { Node, generateAST } from './ast';
+import { formatNode} from './common/format'; 
+import { RuleTrace } from './rules/rules';
 
 interface PrinterResult {
     output: string;
     ruleTraces: RuleTrace[];
-    astNode?: ast.Node;
+    astNode?: Node;
 }
 
 export class Printer {
     public run(sourceHTML: string): PrinterResult {
-        const rootNode = ast.generateAST(sourceHTML);
+        const rootNode = generateAST(sourceHTML);
         const ruleTraces: RuleTrace[] = [];
         if (rootNode) {
             return {
-                output: formatNode(rootNode, 0, ruleTraces),
+                // TODO: Using rootNode as the parent is a bit of a hack
+                output: formatNode(rootNode, 0, rootNode, ruleTraces),
                 ruleTraces,
                 astNode: rootNode,
             };
@@ -28,21 +25,5 @@ export class Printer {
                 ruleTraces,
             };
         }
-    }
-}
-
-export function formatNode(node: ast.Node, indent: number, ruleTrace: RuleTrace[]): string {
-    switch (node.type) {
-        case ast.NodeTypes.ROOT:
-            return node.children.map( (n) => formatNode(n, indent, ruleTrace)).join('').trim();
-        case ast.NodeTypes.TAG:
-            return applyFirstRule(tagRules, node, indent, formatNode, ruleTrace);
-        case ast.NodeTypes.TEXT:
-            return applyFirstRule(textRules, node, indent, emptyStringFunc, ruleTrace);
-        case ast.NodeTypes.COMMENT:
-            return applyFirstRule(commentRules, node, indent, emptyStringFunc, ruleTrace);
-        default:
-            assertNever(node);
-            throw new Error('Reach end of node types');
     }
 }

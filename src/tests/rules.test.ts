@@ -1,11 +1,10 @@
 import * as util from 'util';
 
-import { generateAST } from '../ast';
-import { formatNode, Printer } from '../printer';
+import { Printer } from '../printer';
 
 import { attributeRules } from '../rules/attributes.rules';
 import { commentRules } from '../rules/comment.rules';
-import { Rule, RuleTrace, RuleTypes } from '../rules/rules';
+import { Rule, RuleTypes } from '../rules/rules';
 import { tagRules } from '../rules/tag.rules';
 import { textRules } from '../rules/text.rules';
 import { prettifyRuleTraces } from '../util';

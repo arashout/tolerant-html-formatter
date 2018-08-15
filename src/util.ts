@@ -1,4 +1,4 @@
-import { Node, NodeTypes } from './ast';
+import { Node, NodeTypes, TagNode } from './ast';
 import { RuleTrace } from './rules/rules';
 
 export function assertNever(x: never): never {
@@ -29,6 +29,7 @@ export function prettifyRuleTraces(ruleTraces: RuleTrace[]): PrettyRuleTrace[] {
         // It's not helpful to see the children of the Node, so we delete it to make the logs easier to read
         if (node.type === NodeTypes.TAG || node.type === NodeTypes.ROOT) {
             delete node.children;
+            delete (node as TagNode).raw;
         }
         let prettyRuleTrace = {
             name: rt.rule_name,

@@ -1,5 +1,5 @@
 import { Attribute } from '../ast';
-import { INDENT_SIZE, MAX_LINE_LENGTH } from '../config';
+import { INDENT_SIZE } from '../config';
 import { cleanStringHTML } from '../util';
 import { AttributeRule, emptyStringFunc, indentString, Rule, RuleTypes } from './rules';
 
@@ -11,8 +11,9 @@ export const attributeRules: AttributeRule[] = [
     {
         type: RuleTypes.ATTRIBUTE_RULE,
         name: 'sameLine',
-        shouldApply(this: AttributeRule, attributes: Attribute[], indent?: number): boolean {
-            const formattedString = this.apply(attributes, indent || INDENT_SIZE, emptyStringFunc, []);
+        // Might have to pass indent through here
+        shouldApply(this: AttributeRule, attributes: Attribute[]): boolean {
+            const formattedString = this.apply(attributes, INDENT_SIZE, []);
             // TODO: Going to have to ask Crob about how exactly he wants the attributes to behave
             // console.log(formattedString);
             // console.log(formattedString.length);

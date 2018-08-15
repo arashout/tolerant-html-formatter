@@ -11,7 +11,9 @@
         "no-unused-variable": true,
         "no-unused-expression": true,
         "object-literal-sort-keys":false,
-        "max-line-length": false
+        "max-line-length": false,
+        "no-var-requires": false,
+        "no-empty": false,
     },
     "rulesDirectory": []
 }

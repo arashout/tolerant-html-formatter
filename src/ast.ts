@@ -1,4 +1,4 @@
-import * as cheerio from "cheerio";
+import * as cheerio from 'cheerio';
 
 interface AbstractNode {
     type: NodeTypes;
@@ -11,7 +11,7 @@ export enum NodeTypes {
     COMMENT = 'comment',
 }
 
-export type Node = RootNode | TagNode | TextNode | CommentNode
+export type Node = RootNode | TagNode | TextNode | CommentNode;
 
 export interface RootNode extends AbstractNode {
     type: NodeTypes.ROOT;
@@ -22,6 +22,7 @@ export interface TagNode extends AbstractNode {
     children: Node[];
     attributes: Attribute[];
     name: string; // This cannot be an enum because of arbitary tag names
+    raw: string; 
 }
 
 export interface TextNode extends AbstractNode {
@@ -39,7 +40,6 @@ export interface Attribute {
     value: string | null;
 }
 
-
 function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
     switch (pn.type) {
         case 'tag':
@@ -48,15 +48,17 @@ function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
                 return {
                     type: NodeTypes.ROOT,
                     children: [],
-                }
+                };
             } else {
                 // TODO: This slice might be expensive, might want to convert to an array to avoid copying new string?
-                const attributes = dictToArray(findDirectives(htmlString.slice(pn.startIndex, pn.endIndex), pn.attribs ? pn.attribs : {}));
+                const raw = htmlString.slice(pn.startIndex, (pn.endIndex as number) +1)
+                const attributes = dictToArray(findDirectives(raw, pn.attribs ? pn.attribs : {}));
                 return {
                     type: NodeTypes.TAG,
                     name: pn.name,
                     children: [],
-                    attributes
+                    attributes,
+                    raw,
                 };
             }
         case 'comment':
@@ -65,22 +67,22 @@ function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
                 value: pn.data.trim() as string,
             };
         case 'text':
-            let value = String.raw`${pn.data}`.replace(/^[ ]+|[ ]+$/g, '')
+            let value = String.raw`${pn.data}`.replace(/^[ ]+|[ ]+$/g, '');
             if (value !== '' && value !== '\n') {
                 // If it is pure whitespace node
-                if(/^[\n\s]+$/g.test(value)){
+                if (/^[\n\s]+$/g.test(value)) {
                     // We get an extra newline on each text node which, we usually trim
-                    // except in the case where the entire string is whitespace 
+                    // except in the case where the entire string is whitespace
                     value = value.replace(' ', '').slice(0, -1);
                     return {
                         type: NodeTypes.TEXT,
-                        value: value,
-                    }
+                        value,
+                    };
                 } else {
                     return {
                         type: NodeTypes.TEXT,
                         value: value.trim(),
-                    }
+                    };
                 }
             }
     }
@@ -88,7 +90,7 @@ function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
 
 /**
  * Converts a dictionary into an array of key value pairs
- * @param obj 
+ * @param obj
  */
 function dictToArray(obj: Dictionary<string | null>): Attribute[] {
     const attributeArray: Attribute[] = [];
@@ -104,7 +106,7 @@ export function generateAST(htmlString: string): Maybe<Node> {
 
         if (node) {
             if (parent) {
-                parent.children.push(node)
+                parent.children.push(node);
             }
 
             if (pe.children) {
@@ -118,27 +120,27 @@ export function generateAST(htmlString: string): Maybe<Node> {
         }
 
         return node;
-    };
-    // Use our own root element to wrap everything! 
+    }
+    // Use our own root element to wrap everything!
     // So it is possible to deal with multiple top-level nodes
     htmlString = `<root>\n${htmlString}\n</root>`;
 
     // Cheerio need to fix their types, ignoreWhitespace is valid!
     // Also setting xmlMode removes automatic wrapping of html, body tags
-    const $ = cheerio.load(htmlString, { 
-        ignoreWhitespace: false, 
+    const $ = cheerio.load(htmlString, {
+        ignoreWhitespace: false,
         xmlMode: true,
         withStartIndices: true,
         withEndIndices: true,
     } as CheerioOptionsInterface);
-    const rootCheerioElement = $("*").get()[0];
+    const rootCheerioElement = $('*').get()[0];
     return traverse(rootCheerioElement);
 }
 
 /**
- * 
- * @param rawTagHTML 
- * @param attributesMap 
+ *
+ * @param rawTagHTML
+ * @param attributesMap
  */
 export function findDirectives(rawTagHTML: string, attributesMap: Dictionary<string>): Dictionary<string | null> {
     // Step 1: Squash all the white-space
@@ -150,30 +152,33 @@ export function findDirectives(rawTagHTML: string, attributesMap: Dictionary<str
     for (let i = 0; i < tagHTML.length; i++) {
         const c = tagHTML[i];
 
-        if(c === '>' && !isInsideQuotes){
+        if (c === '>' && !isInsideQuotes) {
             endOpeningTagIndex = i;
             break;
-        } else if(c === '"'){
+        } else if (c === '"') {
             isInsideQuotes = !isInsideQuotes;
         }
     }
     const openingTagHTML = tagHTML.slice(0, endOpeningTagIndex + 1);
 
     // Step 3: Find all the directives (words with spaces around them OR word with space at start and > at end)
-    const findDirectivesRegex = /(?:\s([-\w]+)\s)|(?:\s([-\w]+))>$/g
-    let match: RegExpExecArray | null;
+    const findDirectivesRegex = /(?:\s([-\w]+)\s)|(?:\s([-\w]+))>$/g;
     const newAttributesMap: Dictionary<string | null> = Object.assign({}, attributesMap);
 
-    while (match = findDirectivesRegex.exec(openingTagHTML)) {
+    while (true) {
+        const match = findDirectivesRegex.exec(openingTagHTML);
+        if (match === null) {
+            break;
+        }
         // Caveat, the regex above also matches `class="flex btn primary"` the "btn" portion so I need to weed those out
         let countQuotes = 0; // If there are an odd number of quotes we know we found a false positive
         for (let i = match.index; i < openingTagHTML.length; i++) {
             const c = openingTagHTML[i];
-            if(c === '"'){
+            if (c === '"') {
                 countQuotes++;
             }
         }
-        if(countQuotes % 2 === 0){
+        if (countQuotes % 2 === 0) {
             const key = match[1] || match[2];
             newAttributesMap[key] = null; // Null indicates a directive!
         }

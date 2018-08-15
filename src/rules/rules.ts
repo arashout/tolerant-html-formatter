@@ -1,15 +1,14 @@
 import { Attribute, CommentNode, Node, TagNode, TextNode } from '../ast';
+import { formatNode } from '../common/format';
 
 // RT == RuleType, IT == InputType
 interface BaseRule<RT extends RuleTypes, IT extends InputType> {
     type: RT;
     name: string;
     description?: string;
-    shouldApply: (inputType: IT, indent?: number) => boolean;
-    apply: (input: IT, indent: number, childrenCallback: FormatNode, ruleTrace: RuleTrace[]) => string;
+    shouldApply: (inputType: IT, parent: Node) => boolean;
+    apply: (input: IT, indent: number, ruleTrace: RuleTrace[]) => string;
     tests?: RuleTest[];
-    // TODO: Eventually make this mandotory?
-    precedence?: number;
 }
 
 export interface RuleTest {
@@ -27,7 +26,6 @@ export enum RuleTypes {
 
 type InputType = TagNode | TextNode | CommentNode | Attribute[];
 export type Rule = TagRule | TextRule | CommentRule | AttributeRule;
-export type FormatNode = (node: Node, indent: number, ruleTraces: RuleTrace[]) => string;
 
 export interface TagRule extends BaseRule<RuleTypes.TAG_RULE, TagNode> { }
 export interface TextRule extends BaseRule<RuleTypes.TEXT_RULE, TextNode> { }
@@ -55,11 +53,17 @@ export interface RuleTrace {
  * @param cb
  */
 export function applyFirstRule
-    <RT extends RuleTypes, IT extends InputType>(rules: Array<BaseRule<RT, IT>>, input: IT, indent: number, cb: FormatNode, ruleTrace: RuleTrace[]): string {
-    const passingRules = rules.filter((r) => r.shouldApply(input));
+    <RT extends RuleTypes, IT extends InputType>(
+        rules: Array<BaseRule<RT, IT>>, 
+        input: IT, 
+        indent: number, 
+        parent: Node,
+        ruleTrace: RuleTrace[]
+    ): string {
+    const passingRules = rules.filter((r) => r.shouldApply(input, parent));
     if (passingRules.length === 0) {
         throw new Error('Should always have one passing rule for input: ' + JSON.stringify(input));
     }
     ruleTrace.push({rule_name: passingRules[0].name, node_string: JSON.stringify(input, null, 2)});
-    return passingRules[0].apply(input, indent, cb, ruleTrace);
+    return passingRules[0].apply(input, indent, ruleTrace);
 }

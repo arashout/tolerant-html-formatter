@@ -1,8 +1,22 @@
-import { TextNode } from '../ast';
+import { TextNode, NodeTypes, Node } from '../ast';
 import { cleanStringHTML } from '../util';
 import { indentString, RuleTypes, TextRule } from './rules';
 
 export const textRules: TextRule[] = [
+    {
+        type: RuleTypes.TEXT_RULE,
+        name: 'textOnRootNode',
+        shouldApply: (_: TextNode, parent: Node): boolean => parent.type === NodeTypes.ROOT,
+        apply: (tn: TextNode, __: number): string => {
+            const value = tn.value.replace(/^ */, '').replace(/ *$/, '');
+            // 1. Squash multiple new-lines
+            // 2. Otherwise print with single new-line
+            if(/^\n+$/.test(value))  {
+                return '\n';
+            }
+            return tn.value + '\n';
+        },
+    },
     {
         type: RuleTypes.TEXT_RULE,
         name: 'newlines',
