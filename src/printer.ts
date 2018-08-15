@@ -11,6 +11,9 @@ interface PrinterResult {
     ruleTraces: RuleTrace[],
     astNode?: ast.Node,
 }
+
+
+
 export class Printer {
     run(sourceHTML: string): PrinterResult {
         const rootNode = ast.generateAST(sourceHTML);

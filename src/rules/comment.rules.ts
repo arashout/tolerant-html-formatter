@@ -7,7 +7,8 @@ export const commentRules: CommentRule[] = [
         name: 'commentSameLine',
         shouldApply: (_: CommentNode): boolean => true,
         apply: (cn: CommentNode, indent: number): string => {
-            return indentString(`<!--${cn.value}-->\n`, indent);
+            // Trim leading/trailing white space and add our own
+            return indentString(`<!-- ${cn.value.trim()} -->\n`, indent);
         },
     },
 ];

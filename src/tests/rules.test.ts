@@ -28,7 +28,7 @@ function ruleTestsRunner(rules: Rule[]){
                     if(rootNode){
                         const result = formatNode(rootNode, 0, ruleTraces);
                         if (result !== rt.expectedHTML){
-                            // console.log(util.inspect(prettifyRuleTraces(ruleTraces), false, null));
+                            console.log(util.inspect(prettifyRuleTraces(ruleTraces), false, null));
                         }
                         expect(result).toBe(rt.expectedHTML);
                     }

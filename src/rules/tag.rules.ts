@@ -27,18 +27,18 @@ const voidElements = [
 export const tagRules: TagRule[] = [
     {
         type: RuleTypes.TAG_RULE,
-        name: 'voidTag',
+        name: 'voidTag', // https://stackoverflow.com/a/10599002/5258887
         shouldApply(tn: TagNode): boolean {
             return voidElements.indexOf(tn.name) !== -1;
         },
         apply(tn: TagNode, indent: number, _: FormatNode, ruleTraces: RuleTrace[]): string {
             const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
-            return indentString(`<${tn.name}${attributesString}>\n`, indent);
+            return indentString(`<${tn.name}${attributesString}/>`, indent) + '\n';
         },
         tests: [
             {
                 actualHTML: `<input a="whatAnAttribute">`,
-                expectedHTML: `<input a="whatAnAttribute">`,
+                expectedHTML: `<input a="whatAnAttribute"/>`,
                 description: "do not screw up simple input tag"
             },
             {
@@ -47,7 +47,7 @@ export const tagRules: TagRule[] = [
                 <input
                   a="whatAnAttribute"
                   b="2"
-                  c="3">`),
+                  c="3"/>`),
                 description: "do not screw up more complicated input tag"
             },
         ]
@@ -60,7 +60,7 @@ export const tagRules: TagRule[] = [
         },
         apply(tn: TagNode, indent: number, _: FormatNode, ruleTraces: RuleTrace[]): string {
             const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, emptyStringFunc, ruleTraces);
-            return indentString(`<${tn.name}${attributesString}></${tn.name}>\n`, indent);
+            return indentString(`<${tn.name}${attributesString}></${tn.name}>`, indent) + '\n';
         },
         tests: [
             {
@@ -81,15 +81,15 @@ export const tagRules: TagRule[] = [
             let text = cb(tn.children[0], 0, ruleTraces);
 
             // TODO: Should I be counting indentation?
-            let singleLineResult = indentString(`<${tn.name}${attributesString}>${squashWhitespace(text)}</${tn.name}>\n`, indent);
+            let singleLineResult = indentString(`<${tn.name}${attributesString}>${squashWhitespace(text)}</${tn.name}>`, indent);
             if(singleLineResult.length <= MAX_LINE_LENGTH){
-                return singleLineResult;
+                return singleLineResult + '\n';
             } else {
                 // Indent all the strings
                 const startTag = indentString(`<${tn.name}${attributesString}>\n`, indent);
                 text = indentString(text + '\n', indent + INDENT_SIZE);
-                const endTag = indentString(`</${tn.name}>\n`, indent);
-                return startTag + text + endTag;
+                const endTag = indentString(`</${tn.name}>`, indent);
+                return startTag + text + endTag + '\n';
             }
         },
         tests: [
@@ -136,6 +136,24 @@ export const tagRules: TagRule[] = [
                   Create Tag
                 </button>`),
                 description: "default print"
+            },
+            {
+                actualHTML: cleanStringHTML(`
+                <div class="class1">
+                  testDiv
+                  <p>testP</p
+                </div>
+                
+                <div class="class2"></div>`),
+                expectedHTML: cleanStringHTML(`
+                <div class="class1">
+                  testDiv
+                  <p>testP</p
+                </div>
+
+                <div class="class2"></div>
+                `),
+                description: "multiple root elements"
             },
         ]
     },

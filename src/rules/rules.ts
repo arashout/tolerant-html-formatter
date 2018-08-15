@@ -5,9 +5,11 @@ interface BaseRule<RT extends RuleTypes, IT extends InputType> {
     type: RT;
     name: string;
     description?: string;
-    shouldApply: (inputType: IT) => boolean;
+    shouldApply: (inputType: IT, indent?: number) => boolean;
     apply: (input: IT, indent: number, childrenCallback: FormatNode, ruleTrace: RuleTrace[]) => string;
     tests?: RuleTest[];
+    // TODO: Eventually make this mandotory?
+    precedence?: number;
 }
 
 export interface RuleTest {

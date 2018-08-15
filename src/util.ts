@@ -30,11 +30,15 @@ export function prettifyRuleTraces(ruleTraces: RuleTrace[]): PrettyRuleTrace[]{
         if(node.type === NodeTypes.TAG || node.type === NodeTypes.ROOT){
             delete node.children;
         }
-        prettifiedRuleTraces.push({
+        let prettyRuleTrace = {
             name: rt.rule_name,
             node: node,
-            meta: rt.meta,
-        });
+        };
+        if(rt.meta){
+            prettyRuleTrace = Object.assign(prettyRuleTrace, {meta: rt.meta});
+        }
+
+        prettifiedRuleTraces.push(prettyRuleTrace);
     }
     return prettifiedRuleTraces;
 }

@@ -7,5 +7,5 @@ node_modules/
 *.js
 !jest.config.js
 
-# Exclude output from formatter
-out*
+# Exclude test outputs
+actual-*

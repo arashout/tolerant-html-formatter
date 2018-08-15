@@ -1,7 +1,17 @@
 import { TextNode } from "../ast";
 import { RuleTypes, TextRule, indentString } from "./rules";
+import { cleanStringHTML } from "../util";
 
 export const textRules: TextRule[] = [
+    {
+        type: RuleTypes.TEXT_RULE,
+        name: 'newlines',
+        shouldApply: (tn: TextNode): boolean =>  /^\n+$/.test(tn.value),
+        apply: (_: TextNode, __: number): string => '\n',
+        tests: [
+
+        ]
+    },
     {
         type: RuleTypes.TEXT_RULE,
         name: 'textSameLine',

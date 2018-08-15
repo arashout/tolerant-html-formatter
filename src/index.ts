@@ -41,7 +41,6 @@ export class HTMLFormatter {
 
                         p = path.resolve(path.dirname(currentPath), 'out_ast_' + path.basename(currentPath,'.html') + '.json');
                         tasks.push(writeFileAsync(p, JSON.stringify(result.astNode, null, 2)));
-
                     }
 
                 }
