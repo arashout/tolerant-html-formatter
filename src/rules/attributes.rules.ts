@@ -49,13 +49,14 @@ export const attributeRules: AttributeRule[] = [
         }, 
         tests: [
             {
-                actualHTML: `<div a="1" b="2" c="3"></div>`,
+                actualHTML: `<div a="1" b="2" c="3" d class="flex btn button"></div>`,
                 expectedHTML: cleanStringHTML(`
                     <div
                       a="1"
                       b="2"
                       c="3"
-                      d></div>
+                      d
+                      class="flex btn button"></div>
                     `),
                 description: 'should have 1 attribute per line'
             }

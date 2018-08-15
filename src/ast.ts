@@ -51,8 +51,6 @@ function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
                 }
             } else {
                 const attributes = pn.attribs ? attributeMapToArray(pn.attribs) : [];
-                const directives = findDirectives(htmlString.slice(pn.startIndex, pn.endIndex));
-                attributes.push(...directives);
                 return {
                     type: NodeTypes.TAG,
                     name: pn.name,
@@ -135,37 +133,47 @@ export function generateAST(htmlString: string): Maybe<Node> {
     const rootCheerioElement = $("*").get()[0];
     return traverse(rootCheerioElement);
 }
-/**
- * Exported for testing
- * @param rawTagHTML 
- */
-export function findDirectives(rawTagHTML: string): Attribute[] {
-    // Step 1: Get rid of new lines
-    const tagHTML = rawTagHTML.replace('\n', '');
-    // Step 2: Find the stuff just within the opening tag to make the problem easier
-    let isInsideQuotes = false;
-    let endOpeningTagIndex = 0;
-    for (let i = 0; i < tagHTML.length; i++) {
-        const c = tagHTML[i];
-        if(c === '>' && !isInsideQuotes){
-            endOpeningTagIndex = i;
-            break;
-        } else if(c === '"'){
-            isInsideQuotes = !isInsideQuotes;
-        }
-    }
-    const openingTagHTML = tagHTML.slice(0, endOpeningTagIndex + 1);
+// /**
+//  * Exported for testing
+//  * @param rawTagHTML 
+//  */
+// export function findDirectives(rawTagHTML: string): Attribute[] {
+//     // Step 1: Squash all the white-space
+//     const tagHTML = rawTagHTML.replace(/\s+/g, ' ');
 
-    // Step 3: Find all the directives (words with spaces around them OR word with space at start and > at end)
-    const findDirectivesRegex = /(?:\s(\w+)\s)|(?:\s(\w+))>$/g
-    let match: RegExpExecArray | null;
-    const directives: Attribute[] = [];
-    while (match = findDirectivesRegex.exec(openingTagHTML)) {
-        // JavaScript Regex is dumb man
-        directives.push({key: match[1] || match[2], value: ''});
-    }
+//     // Step 2: Find the stuff just within the opening tag to make the problem easier
+//     let isInsideQuotes = false;
+//     let endOpeningTagIndex = 0;
+//     for (let i = 0; i < tagHTML.length; i++) {
+//         const c = tagHTML[i];
+
+//         if(c === '>' && !isInsideQuotes){
+//             endOpeningTagIndex = i;
+//             break;
+//         } else if(c === '"'){
+//             isInsideQuotes = !isInsideQuotes;
+//         }
+//     }
+//     const openingTagHTML = tagHTML.slice(0, endOpeningTagIndex + 1);
+
+//     // Step 3: Find all the directives (words with spaces around them OR word with space at start and > at end)
+//     const findDirectivesRegex = /(?:\s(\w+)\s)|(?:\s(\w+))>$/g
+//     let match: RegExpExecArray | null;
+//     const directives: Attribute[] = [];
+
+//     while (match = findDirectivesRegex.exec(openingTagHTML)) {
+//         // Caveat, the regex above also matches `class="flex btn primary"` the "btn" portion so I need to weed those out
+//         let countQuotes = 0; // If there are an odd number of quotes we know we found a false positive
+//         for (let i = match.index; i < openingTagHTML.length; i++) {
+//             const c = openingTagHTML[i];
+//             if(c === '"'){
+//                 countQuotes++;
+//             }
+//         }
+//         if(countQuotes % 2 === 0){
+//             directives.push({key: match[1] || match[2], value: ''});
+//         }
+//     }
     
-    // Jamie
-    // ^<\S*\s(?:(?:\w+="[^"]*"\s*)|(\w+\s))+
-    return directives;
-}
+//     return directives;
+// }
