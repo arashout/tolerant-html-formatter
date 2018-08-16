@@ -1,10 +1,10 @@
 import { TextNode, NodeTypes, Node } from '../ast';
-import { cleanStringHTML } from '../util';
-import { indentString, RuleTypes, TextRule } from './rules';
+import { cleanStringHTML } from '../common/util';
+import { indentString, RuleType, TextRule } from './rules';
 
 export const textRules: TextRule[] = [
     {
-        type: RuleTypes.TEXT_RULE,
+        type: RuleType.TEXT_RULE,
         name: 'textOnRootNode',
         shouldApply: (_: TextNode, parent: Node): boolean => parent.type === NodeTypes.ROOT,
         apply: (tn: TextNode, __: number): string => {
@@ -18,7 +18,7 @@ export const textRules: TextRule[] = [
         },
     },
     {
-        type: RuleTypes.TEXT_RULE,
+        type: RuleType.TEXT_RULE,
         name: 'newlines',
         shouldApply: (tn: TextNode): boolean =>  /^\n+$/.test(tn.value),
         apply: (_: TextNode, __: number): string => '\n',
@@ -27,7 +27,7 @@ export const textRules: TextRule[] = [
         ],
     },
     {
-        type: RuleTypes.TEXT_RULE,
+        type: RuleType.TEXT_RULE,
         name: 'textSameLine',
         shouldApply: (_: TextNode): boolean => true,
         apply: (tn: TextNode, indent: number): string => indentString(tn.value, indent),

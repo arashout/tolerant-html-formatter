@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { Printer } from '../printer';
-import { prettifyRuleTraces, assertNever } from '../util';
+import { assertNever } from '../common/util';
 
 const integrationDir = path.resolve(__dirname, 'integration/');
 const fileNames = fs.readdirSync(integrationDir);
@@ -34,7 +34,7 @@ for (const baseName of baseFileNames) {
             fs.writeFileSync(getFilePath('actual-', baseName, 'html'), result.output);
             fs.writeFileSync(
                 getFilePath('actual-', baseName, 'rule-traces'),
-                JSON.stringify({ ruleTraces: prettifyRuleTraces(result.ruleTraces) }, null, 2),
+                JSON.stringify({ ruleTraces: result.ruleTraces }, null, 2),
             );
             fs.writeFileSync(
                 getFilePath('actual-', baseName, 'ast'),

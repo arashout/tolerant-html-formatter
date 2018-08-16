@@ -1,6 +1,6 @@
-import { Node, generateAST } from './ast';
-import { formatNode} from './common/format'; 
-import { RuleTrace } from './rules/rules';
+import { Node, generateAST, NodeTypes } from './ast';
+import { formatNode } from './common/format';
+import { ruleTracer, RuleTrace } from './rules/rule-trace.service';
 
 interface PrinterResult {
     output: string;
@@ -10,20 +10,18 @@ interface PrinterResult {
 
 export class Printer {
     public run(sourceHTML: string): PrinterResult {
+        ruleTracer.clearTraces();
         const rootNode = generateAST(sourceHTML);
-        const ruleTraces: RuleTrace[] = [];
+        let output = '';
         if (rootNode) {
-            return {
-                // TODO: Using rootNode as the parent is a bit of a hack
-                output: formatNode(rootNode, 0, rootNode, ruleTraces),
-                ruleTraces,
-                astNode: rootNode,
-            };
-        } else {
-            return {
-                output: '',
-                ruleTraces,
-            };
+            // TODO: Using rootNode as the parent is a bit of a hack
+            output = formatNode(rootNode, 0, rootNode);
         }
+        const ruleTraces = ruleTracer.getTraces(true);
+        return {
+            output,
+            ruleTraces,
+            astNode: rootNode ? rootNode : { type: NodeTypes.ROOT, children: [] } ,
+        };
     }
 }

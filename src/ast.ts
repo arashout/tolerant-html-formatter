@@ -9,28 +9,32 @@ export enum NodeTypes {
     TAG = 'tag',
     TEXT = 'text',
     COMMENT = 'comment',
+    ATTRIBUTE = 'attribute'
 }
 
-export type Node = RootNode | TagNode | TextNode | CommentNode;
+export type Node = RootNode | TagNode | TextNode | CommentNode | AttributeNode;
 
-export interface RootNode extends AbstractNode {
+export interface AttributeNode extends AbstractNode {
+    type: NodeTypes.ATTRIBUTE;
+    attributes: Attribute[];
+}
+export interface RootNode {
     type: NodeTypes.ROOT;
     children: Node[];
 }
-export interface TagNode extends AbstractNode {
+export interface TagNode {
     type: NodeTypes.TAG;
     children: Node[];
-    attributes: Attribute[];
+    attributeNode: AttributeNode; // Damn, man I hate this but I need it to make the TypeScript compiler happy
     name: string; // This cannot be an enum because of arbitary tag names
-    raw: string; 
 }
 
-export interface TextNode extends AbstractNode {
+export interface TextNode {
     type: NodeTypes.TEXT;
     value: string;
 }
 
-export interface CommentNode extends AbstractNode {
+export interface CommentNode {
     type: NodeTypes.COMMENT;
     value: string;
 }
@@ -51,14 +55,16 @@ function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
                 };
             } else {
                 // TODO: This slice might be expensive, might want to convert to an array to avoid copying new string?
-                const raw = htmlString.slice(pn.startIndex, (pn.endIndex as number) +1)
-                const attributes = dictToArray(findDirectives(raw, pn.attribs ? pn.attribs : {}));
+                // const raw = htmlString.slice(pn.startIndex, (pn.endIndex as number) +1)
+                const attributes = dictToArray(findDirectives(htmlString.slice(pn.startIndex, (pn.endIndex as number) +1), pn.attribs ? pn.attribs : {}));
                 return {
                     type: NodeTypes.TAG,
                     name: pn.name,
                     children: [],
-                    attributes,
-                    raw,
+                    attributeNode: {
+                        type: NodeTypes.ATTRIBUTE,
+                        attributes,
+                    },
                 };
             }
         case 'comment':

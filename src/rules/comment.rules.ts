@@ -1,9 +1,9 @@
 import { CommentNode } from '../ast';
-import { CommentRule, indentString, RuleTypes } from './rules';
+import { CommentRule, indentString, RuleType } from './rules';
 
 export const commentRules: CommentRule[] = [
     {
-        type: RuleTypes.COMMENT_RULE,
+        type: RuleType.COMMENT_RULE,
         name: 'commentSameLine',
         shouldApply: (_: CommentNode): boolean => true,
         apply: (cn: CommentNode, indent: number): string => {
