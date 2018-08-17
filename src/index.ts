@@ -5,7 +5,6 @@ import * as path from 'path';
 import * as util from 'util';
 
 import { Printer } from './printer';
-import { prettifyRuleTraces } from './util';
 
 const readFileAsync = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
@@ -37,7 +36,7 @@ export class HTMLFormatter {
 
                     if (options.debug) {
                         let p = path.resolve(path.dirname(currentPath), 'out_rt_' + path.basename(currentPath, '.html') + '.json');
-                        tasks.push(writeFileAsync(p, JSON.stringify({ ruleTraces: prettifyRuleTraces(result.ruleTraces) }, null, 2)));
+                        tasks.push(writeFileAsync(p, JSON.stringify({ ruleTraces: result.ruleTraces }, null, 2)));
 
                         p = path.resolve(path.dirname(currentPath), 'out_ast_' + path.basename(currentPath, '.html') + '.json');
                         tasks.push(writeFileAsync(p, JSON.stringify(result.astNode, null, 2)));

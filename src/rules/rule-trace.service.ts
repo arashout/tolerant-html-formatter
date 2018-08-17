@@ -1,17 +1,19 @@
 import { Node, NodeTypes, TagNode } from "../ast";
 import { Rule, RuleType, BaseRule, IRule } from "./rules";
+import { INDENT_SIZE } from "../config";
 
 export interface RuleTrace {
     rule_name: string;
     node: Node;
+    level: number;
 }
 
 class RuleTracer {
     private ruleTraces: RuleTrace[] = [];
     constructor() { }
 
-    public addTrace(node: Node, rule: IRule): void {
-        this.ruleTraces.push({ rule_name: rule.name, node });
+    public addTrace(node: Node, rule: IRule, indent: number): void {
+        this.ruleTraces.push({ rule_name: rule.name, node, level: Math.floor(indent / INDENT_SIZE) });
     }
 
     public getTraces(pretty: boolean) {
@@ -39,7 +41,7 @@ export const ruleTracer = new RuleTracer();
 export function traceWrapper(rule: IRule): IRule {
     const applyRef = rule.apply;
     rule.apply = function(input: Node, indent: number): string {
-        ruleTracer.addTrace(input, rule);
+        ruleTracer.addTrace(input, rule, indent);
         return applyRef(input, indent);
     }
     return rule;

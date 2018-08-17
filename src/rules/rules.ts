@@ -1,15 +1,16 @@
 import { Attribute, CommentNode, Node, TagNode, TextNode, RootNode, AttributeNode } from '../ast';
 
-// RT == RuleType, IT == InputType
-export interface BaseRule<RT, IT> {
+export interface BaseRule<RT extends RuleType, N extends Node> {
     type: RT;
     name: string;
     description?: string;
-    shouldApply: (inputType: IT, parent: Node) => boolean;
-    apply: (input: IT, indent: number) => string;
+    shouldApply: ShouldApplyFunc<N>;
+    apply: ApplyFunc<N>;
     tests?: RuleTest[];
 }
 
+interface ShouldApplyFunc<N extends Node> {(node: N, parent: Node): boolean };
+type ApplyFunc<N extends Node> = (node: N, indent: number) => string;
 export interface RuleTest {
     actualHTML: string;
     expectedHTML: string;

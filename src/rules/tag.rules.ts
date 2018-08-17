@@ -26,24 +26,12 @@ const voidElements = [
     'wbr',
 ];
 
-// TODO: These rules will be the biggest, how can I avoid this? Should I sub-group by tag Name?
-export const tagRules: TagRule[] = [
-    // {
-    //     type: RuleTypes.TAG_RULE,
-    //     name: 'pre',
-    //     shouldApply(tn: TagNode): boolean {
-    //         return tn.name === 'pre';
-    //     },
-    //     apply(tn: TagNode, indent: number): string {
-    //         const attributesString = applyFirstRule(attributeRules, tn.attributes, indent, tn);
-    //         return tn.raw + '\n';
-    //     },
-    //     tests: [
-    //     ],
-    // },
-    {
+type TagRuleNames = 'tagVoid' | 'tagChildless' | 'tagTextChild' | 'tagDefault';
+
+const tagRulesMap = new Map<TagRuleNames, TagRule>([
+    ['tagVoid', {
         type: RuleType.TAG_RULE,
-        name: 'voidTag', // https://stackoverflow.com/a/10599002/5258887
+        name: 'tagVoid', // https://stackoverflow.com/a/10599002/5258887
         shouldApply(tn: TagNode): boolean {
             return voidElements.indexOf(tn.name) !== -1;
         },
@@ -67,10 +55,10 @@ export const tagRules: TagRule[] = [
                 description: 'do not screw up more complicated input tag',
             },
         ],
-    },
-    {
+    }],
+    ['tagChildless', {
         type: RuleType.TAG_RULE,
-        name: 'simpleTag',
+        name: 'tagChildless',
         shouldApply(tn: TagNode): boolean {
             return tn.children.length === 0;
         },
@@ -85,10 +73,10 @@ export const tagRules: TagRule[] = [
                 description: '2 simple tags',
             },
         ],
-    },
-    {
+    }],
+    ['tagTextChild', {
         type: RuleType.TAG_RULE,
-        name: 'singleTextChildTag',
+        name: 'tagTextChild',
         shouldApply(tn: TagNode): boolean {
             return tn.children.length === 1 && tn.children[0].type === NodeTypes.TEXT;
         },
@@ -125,19 +113,15 @@ export const tagRules: TagRule[] = [
                 description: 'squash multiple lines into single lines if we can',
             },
         ],
-    },
-    {
+    }],
+    ['tagDefault', {
         type: RuleType.TAG_RULE,
         name: 'defaultTag',
         shouldApply: (_: TagNode): boolean => true,
         apply: (tn: TagNode, indent: number): string => {
             const attributesString = applyFirstRule(attributeRules, tn.attributeNode, indent, tn);
             const childrenString = tn.children.map((n) => {
-                if(n.type === NodeTypes.TEXT){
-                    return textRules[0].apply(n, indent + INDENT_SIZE);
-                } else {
-                    return formatNode(n, indent + INDENT_SIZE, tn);
-                }
+                return formatNode(n, indent + INDENT_SIZE, tn);
             }).join('');
 
             const startTag = indentString(`<${tn.name}${attributesString}>`, indent);
@@ -161,5 +145,10 @@ export const tagRules: TagRule[] = [
                 description: 'default print',
             },
         ],
-    },
-].map( r  => traceWrapper(r as IRule)) as TagRule[];
+    }]
+])
+tagRulesMap.forEach(v => traceWrapper(v as IRule));
+
+const tagRules: TagRule[] = Array.from(tagRulesMap.values());
+
+export {tagRules, tagRulesMap};
