@@ -1,5 +1,5 @@
-import { TextNode, NodeTypes, Node } from '../ast';
-import { cleanStringHTML } from '../common/util';
+import { TextNode, NodeTypes, Node, TagNode, RootNode } from '../ast';
+import { cleanStringHTML, squashWhitespace } from '../common/util';
 import { indentString, RuleType, TextRule, IRule } from './rules';
 import { traceWrapper } from './rule-trace.service';
 import { MAX_LINE_LENGTH } from '../config';
@@ -31,21 +31,20 @@ const textRulesMap = new Map<TextRulesNames, TextRule>(
         ['textSameLine', {
             type: RuleType.TEXT_RULE,
             name: 'textSameLine',
-            shouldApply: (tn: TextNode): boolean => tn.value.length <= MAX_LINE_LENGTH,
+            shouldApply: (tn: TextNode, pn: Node): boolean => {
+                if(pn.type === NodeTypes.TAG){
+                    return squashWhitespace(pn.raw).length < MAX_LINE_LENGTH;
+                } else {
+                    return false;
+                }
+            },
             apply: (tn: TextNode, _: number): string => tn.value,
-            tests: [
-                {
-                    actualHTML: 'Hello World',
-                    expectedHTML: 'Hello World',
-                    description: 'text should be on the same line',
-                },
-            ],
         }],
         ['textDefault', {
             type: RuleType.TEXT_RULE,
             name: 'textDefault',
             shouldApply: (_: TextNode): boolean => true,
-            apply: (tn: TextNode, indent: number): string => indentString(tn.value, indent) + '\n',
+            apply: (tn: TextNode, indent: number): string => indentString(tn.value.trim(), indent) + '\n',
         }],
     ]);
 textRulesMap.forEach(v => traceWrapper(v as IRule));

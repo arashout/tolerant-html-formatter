@@ -16,3 +16,16 @@ export function cleanStringHTML(s: string): string {
 export function squashWhitespace(s: string): string {
     return s.replace(/[\n\s]+/g, ' ');
 }
+
+export function squashNewlines(s: string, options: {leading?: boolean, trailing?: boolean}): string {
+    if(!options.leading && !options.trailing){
+        return s.replace(/^\n+/, '\n').replace(/\n+$/, '\n')
+    }
+    if (options.leading){
+        s = s.replace(/^\n+/, '\n');
+    }
+    if (options.trailing){
+        s = s.replace(/\n+$/, '\n');
+    }
+    return s;
+}

@@ -17,11 +17,15 @@ class RuleTracer {
     }
 
     public getTraces(pretty: boolean) {
+        const ruleTraces = JSON.parse(JSON.stringify(this.ruleTraces)) as RuleTrace[];
         if (pretty) {
-            return this.ruleTraces.map((rt) => {
+            return ruleTraces.map((rt) => {
                 // It's not helpful to see the children of the Node, so we delete it to make the logs easier to read
                 if (rt.node.type === NodeTypes.TAG || rt.node.type === NodeTypes.ROOT) {
                     delete rt.node.children;
+                }
+                if(rt.node.type === NodeTypes.TAG){
+                    delete rt.node.raw;
                 }
                 return rt;
             });

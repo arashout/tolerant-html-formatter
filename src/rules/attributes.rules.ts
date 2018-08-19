@@ -27,15 +27,6 @@ const attributeRulesMap =  new Map<AttributeNames, AttributeRule>([
 
             return ' ' + at.attributes.map((a) => attributeToString(a)).join(' ');
         },
-        tests: [
-            {
-                actualHTML: `<div
-                a="1"
-                b></div>`,
-                expectedHTML: `<div a="1" b></div>`,
-                description: 'all attributes should be on the same line',
-            },
-        ],
     }],
     ['attributeOnePerLineTwo',
         {
@@ -44,16 +35,7 @@ const attributeRulesMap =  new Map<AttributeNames, AttributeRule>([
             shouldApply: (at: AttributeNode): boolean => at.attributes.length === 2,
             apply: (at: AttributeNode, indent: number): string => {
                 return (attributeRulesMap.get('attributeOnePerLine') as AttributeRule).apply(at, indent)
-            },
-            tests: [
-                {
-                    actualHTML: `<div
-                    a="1"
-                    b></div>`,
-                    expectedHTML: `<div a="1" b></div>`,
-                    description: 'two long attributes should be on seperate lines',
-                },
-            ],
+            }
         }],
     ['attributeOnePerLine', {
         type: RuleType.ATTRIBUTE_RULE,
@@ -72,21 +54,7 @@ const attributeRulesMap =  new Map<AttributeNames, AttributeRule>([
 
             }
             return attributeString;
-        },
-        tests: [
-            {
-                actualHTML: `<div a="1" b="2" c="3" d class="flex btn button"></div>`,
-                expectedHTML: cleanStringHTML(`
-                    <div
-                      a="1"
-                      b="2"
-                      c="3"
-                      d
-                      class="flex btn button"></div>
-                    `),
-                description: 'should have 1 attribute per line',
-            },
-        ],
+        }
     }],
 ]);
 

@@ -27,6 +27,7 @@ export interface TagNode {
     children: Node[];
     attributeNode: AttributeNode; // Damn, man I hate this but I need it to make the TypeScript compiler happy
     name: string; // This cannot be an enum because of arbitary tag names
+    raw: string;
 }
 
 export interface TextNode {
@@ -43,6 +44,8 @@ export interface Attribute {
     key: string;
     value: string | null;
 }
+
+export type ParentNode = TagNode | RootNode;
 
 function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
     switch (pn.type) {
@@ -61,6 +64,7 @@ function parserNodeToASTNode(pn: parser.Node, htmlString: string): Maybe<Node> {
                     type: NodeTypes.TAG,
                     name: pn.name,
                     children: [],
+                    raw: htmlString.slice(pn.startIndex as number, pn.endIndex as number + 1),
                     attributeNode: {
                         type: NodeTypes.ATTRIBUTE,
                         attributes,

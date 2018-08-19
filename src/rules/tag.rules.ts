@@ -2,7 +2,7 @@ import { NodeTypes, TagNode } from '../ast';
 import { INDENT_SIZE, MAX_LINE_LENGTH } from '../config';
 import { applyFirstRule, indentString, RuleType, TagRule, IRule } from './rules';
 
-import { cleanStringHTML, squashWhitespace } from '../common/util';
+import { cleanStringHTML, squashWhitespace, squashNewlines } from '../common/util';
 import { attributeRules } from './attributes.rules';
 import { formatNode } from '../common/format';
 import { textRules } from './text.rules';
@@ -38,23 +38,7 @@ const tagRulesMap = new Map<TagRuleNames, TagRule>([
         apply(tn: TagNode, indent: number): string {
             const attributesString = applyFirstRule(attributeRules, tn.attributeNode, indent, tn);
             return indentString(`<${tn.name}${attributesString}/>`, indent) + '\n';
-        },
-        tests: [
-            {
-                actualHTML: `<input a="whatAnAttribute">`,
-                expectedHTML: `<input a="whatAnAttribute"/>`,
-                description: 'do not screw up simple input tag',
-            },
-            {
-                actualHTML: `<input a="whatAnAttribute" b="2" c="3">`,
-                expectedHTML: cleanStringHTML(`
-                <input
-                  a="whatAnAttribute"
-                  b="2"
-                  c="3"/>`),
-                description: 'do not screw up more complicated input tag',
-            },
-        ],
+        }
     }],
     ['tagChildless', {
         type: RuleType.TAG_RULE,
@@ -65,14 +49,7 @@ const tagRulesMap = new Map<TagRuleNames, TagRule>([
         apply(tn: TagNode, indent: number): string {
             const attributesString = applyFirstRule(attributeRules, tn.attributeNode, indent, tn);
             return indentString(`<${tn.name}${attributesString}></${tn.name}>`, indent) + '\n';
-        },
-        tests: [
-            {
-                actualHTML: `<div a="whatAnAttribute"></div><div></div>`,
-                expectedHTML: `<div a="whatAnAttribute"></div>\n<div></div>`,
-                description: '2 simple tags',
-            },
-        ],
+        }
     }],
     ['tagTextChild', {
         type: RuleType.TAG_RULE,
@@ -82,37 +59,32 @@ const tagRulesMap = new Map<TagRuleNames, TagRule>([
         },
         apply(tn: TagNode, indent: number): string {
             const attributesString = applyFirstRule(attributeRules, tn.attributeNode, indent, tn);
-            let text = formatNode(tn.children[0], 0, tn);
+            let text = formatNode(tn.children[0], 0, tn).trim();
 
-            // TODO: Should I be counting indentation?
-            const singleLineResult = indentString(`<${tn.name}${attributesString}>${squashWhitespace(text)}</${tn.name}>`, indent);
+            // CASE 1: We can sameLine everything including the attribute tag
+            // CASE 2: We can't sameLine with the attributes but 
+            // we can put the text on the same line as the '>' of the start tag,
+            // This scenario occurs when the attributeString is multiple lines
+            // CASE 3: We can't sameLine anything...
+            const startTag = `<${tn.name}${attributesString}>`;
+            const endTag = `</${tn.name}>`;
+            const singleLineResult = indentString(`${startTag}${text}${endTag}\n`, indent);
+
             if (singleLineResult.length <= MAX_LINE_LENGTH) {
-                return singleLineResult + '\n';
-            } else {
-                // Indent all the strings
-                const startTag = indentString(`<${tn.name}${attributesString}>\n`, indent);
-                text = indentString(text + '\n', indent + INDENT_SIZE);
-                const endTag = indentString(`</${tn.name}>`, indent);
-                return startTag + text + endTag + '\n';
+                return singleLineResult;
             }
-        },
-        tests: [
-            {
-                actualHTML: `<div a="1">This is text</div>`,
-                expectedHTML: `<div a="1">This is text</div>`,
-                description: 'simple text node',
-            },
-            {
-                actualHTML: `<div a="1">Super long stringggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg</div>`,
-                expectedHTML: cleanStringHTML(`<div a="1">\n  Super long stringggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg\n</div>`),
-                description: 'break text node onto a new line',
-            },
-            {
-                actualHTML: `<i>icon\nWith Newline\n What Happens</i>`,
-                expectedHTML: `<i>icon With Newline What Happens</i>`,
-                description: 'squash multiple lines into single lines if we can',
-            },
-        ],
+            // We will only have a match if the attributeString contains newlines
+            const match = attributesString.match(/\n(.+)$/);
+            const lastLine = match ? match[1] : null;
+            if(lastLine && lastLine.length <= MAX_LINE_LENGTH){
+                return indentString(`${startTag}`, indent) + text + endTag + '\n';
+            } 
+            else {
+                // Indent all the strings
+                text = squashNewlines(indentString(text, indent + INDENT_SIZE), {trailing: true});
+                return `${indentString(startTag, indent)}\n${text}\n${indentString(endTag, indent)}\n`;
+            }
+        }
     }],
     ['tagDefault', {
         type: RuleType.TAG_RULE,
@@ -129,22 +101,6 @@ const tagRulesMap = new Map<TagRuleNames, TagRule>([
 
             return `${startTag}\n${childrenString}${endTag}\n`;
         },
-        tests: [
-            {
-                actualHTML: `<button ng-click="$ctrl.openTagForm()"
-                ff-show=">developer" class="flex btn btn-primary mt2"
-                style="white-space: nowrap;">Create Tag</button>`,
-                expectedHTML: cleanStringHTML(`
-                <button
-                  ng-click="$ctrl.openTagForm()"
-                  ff-show=">developer"
-                  class="flex btn btn-primary mt2"
-                  style="white-space: nowrap;">
-                  Create Tag
-                </button>`),
-                description: 'default print',
-            },
-        ],
     }]
 ])
 tagRulesMap.forEach(v => traceWrapper(v as IRule));

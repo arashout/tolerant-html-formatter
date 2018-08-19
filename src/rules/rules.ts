@@ -6,16 +6,18 @@ export interface BaseRule<RT extends RuleType, N extends Node> {
     description?: string;
     shouldApply: ShouldApplyFunc<N>;
     apply: ApplyFunc<N>;
-    tests?: RuleTest[];
+}
+// Not great that I have some duplication here, but I don't know how to avoid it
+export interface IRule {
+    type: RuleType;
+    name: string;
+    description?: string;
+    shouldApply: (inputType: Node, parent: Node) => boolean;
+    apply: (input: Node, indent: number) => string;
 }
 
 interface ShouldApplyFunc<N extends Node> {(node: N, parent: Node): boolean };
 type ApplyFunc<N extends Node> = (node: N, indent: number) => string;
-export interface RuleTest {
-    actualHTML: string;
-    expectedHTML: string;
-    description: string;
-}
 
 export enum RuleType {
     TAG_RULE,
@@ -25,15 +27,6 @@ export enum RuleType {
 }
 
 export type Rule = TagRule | TextRule | CommentRule | AttributeRule;
-
-export interface IRule {
-    type: RuleType;
-    name: string;
-    description?: string;
-    shouldApply: (inputType: Node, parent: Node) => boolean;
-    apply: (input: Node, indent: number) => string;
-    tests?: RuleTest[];
-}
 
 export interface TagRule extends BaseRule<RuleType.TAG_RULE, TagNode> { }
 export interface TextRule extends BaseRule<RuleType.TEXT_RULE, TextNode> { }
